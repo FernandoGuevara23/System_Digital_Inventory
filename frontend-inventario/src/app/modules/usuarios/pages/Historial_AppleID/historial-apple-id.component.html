@@ -1,0 +1,43 @@
+<main class="history-page">
+  <header class="history-header">
+    <div>
+      <h1>Teléfonos </h1>
+    </div>
+    <div ><strong>{{ registrosFiltrados.length }}</strong><span>teléfonos</span></div>
+  </header>
+
+  <section class="panel">
+    <label class="search-field">
+      <input type="search" [(ngModel)]="termino" placeholder="buscar telefono...">
+    </label>
+
+    <p *ngIf="error" class="error-state">{{ error }}</p>
+    <p *ngIf="cargando" class="empty-state">Cargando historial...</p>
+    <p *ngIf="!cargando && !error && !registrosFiltrados.length" class="empty-state">
+      No hay teléfonos que coincidan con la búsqueda.
+    </p>
+
+    <div *ngIf="!cargando && registrosFiltrados.length" class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Estado</th><th>Fecha de registro</th><th>Service Tag</th><th>Marca/Modelo</th><th>IMEI</th>
+            <th>Apple ID</th><th>Password Apple</th><th>Empleado anterior</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let registro of registrosFiltrados">
+            <td><span class="origin" [class.historical]="registro.Origen !== 'Actual'">{{ registro.Origen || '—' }}</span></td>
+            <td>{{ (registro.Fecha_Liberacion || registro.Fecha) | date:'dd/MM/yyyy' }}</td>
+            <td><strong>{{ registro.Service_Tag }}</strong></td>
+            <td>{{ registro.Marca || '—' }} {{ registro.Modelo || '' }}</td>
+            <td>{{ registro.IMEI || '—' }}</td>
+            <td>{{ registro.Apple_ID || '—' }}</td>
+            <td>{{ registro.Password_apple || '—' }}</td>
+            <td>{{ registro.Nombre_Empleado_Anterior || '—' }}<small>{{ registro.Payroll_Anterior || '—' }}</small></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

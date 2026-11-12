@@ -1,0 +1,11 @@
+<div class="modal-overlay fade-in" (click)="closed.emit()">
+  <div class="modal-box slide-in" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">{{ title }}</h2>
+      <button class="modal-close" (click)="closed.emit()" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

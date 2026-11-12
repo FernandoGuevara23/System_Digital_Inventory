@@ -1,0 +1,865 @@
+
+:root {
+	--page-width: 1680px;
+	--page-gutter: clamp(14px, 1.4vw, 24px);
+	--page-top: clamp(16px, 1.5vw, 22px);
+}
+
+html,
+body {
+	width: 100%;
+	min-height: 100vh;
+	min-height: 100dvh;
+	margin: 0;
+	font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", "Helvetica", "Arial", "sans-serif";
+}
+
+html {
+	font-size: 17px;
+}
+
+body {
+	min-height: 100vh;
+	min-height: 100dvh;
+	background: #f4f7fb;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+html[data-theme="dark"] {
+	color-scheme: dark;
+	background: #0f172a;
+}
+
+html[data-theme="dark"] body {
+	background: #0f172a;
+	color: #e2e8f0;
+}
+
+html[data-theme="dark"] app-root .app-shell,
+html[data-theme="dark"] app-root .app-content {
+	background: #0f172a;
+}
+
+html[data-theme="dark"] app-root app-sidebar .sidebar {
+	background: linear-gradient(180deg, #123b3b 0%, #102f32 100%);
+}
+
+html[data-theme="dark"] app-root .app-content :is(
+	[class$="-page"],
+	[class$="-container"],
+	.catalogos-module
+) {
+	background-color: #0f172a !important;
+	color: #e2e8f0;
+}
+
+html[data-theme="dark"] app-root .app-content :is(
+	[class*="workspace"],
+	[class*="panel"]:not([class*="backdrop"]),
+	[class*="card"],
+	[class*="table"],
+	[class*="filter"],
+	[class*="toolbar"],
+	[class*="summary"],
+	[class*="modal"]:not([class*="backdrop"]),
+	[class*="section"],
+	[class*="list"],
+	[class*="catalog"],
+	[class*="module"],
+	[class*="profile"],
+	[class*="detail"],
+	[class*="history"],
+	[class*="grid"],
+	[class*="search"],
+	[class*="stat"],
+	.admin-card,
+	.notification-panel
+) {
+	background-color: #172337 !important;
+	border-color: #34445d !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content :is(h1, h2, h3, h4, p, label, th, td, strong, small):not(
+	[class*="badge"],
+	[class*="status"],
+	[class*="tag"],
+	[class*="button"],
+	[class*="btn"],
+	[class*="alert"],
+	[class*="error"],
+	[class*="warning"],
+	[class*="success"]
+),
+html[data-theme="dark"] app-root .app-content :is([class*="muted"], [class*="description"], [class*="subtitle"], [class*="hint"], [class*="placeholder"]) {
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content :is(input, select, textarea) {
+	background-color: #111c2e !important;
+	border-color: #465873 !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .app-content :is(input, textarea)::placeholder {
+	color: #91a1b7;
+}
+
+html[data-theme="dark"] app-root .app-content :is(table, th, td) {
+	background-color: #172337;
+	border-color: #34445d !important;
+}
+
+html[data-theme="dark"] app-root .app-content button:not(
+	[class*="primary"],
+	[class*="danger"],
+	[class*="warning"],
+	[class*="success"],
+	[class*="active"],
+	[class*="status"],
+	[class*="badge"]
+) {
+	border-color: #465873;
+	background-color: #1b2b3e;
+	color: #d5e0ee;
+}
+
+html[data-theme="dark"] app-root .app-content button:not(
+	[class*="primary"],
+	[class*="danger"],
+	[class*="warning"],
+	[class*="success"],
+	[class*="active"],
+	[class*="status"],
+	[class*="badge"]
+):hover:not(:disabled) {
+	background-color: #263a50;
+}
+
+html[data-theme="dark"] app-root .notification-toggle,
+html[data-theme="dark"] app-root .theme-toggle {
+	background: #1b2b3e;
+	border-color: #40536b;
+	color: #b6e3cf;
+}
+
+html[data-theme="dark"] app-root .notification-toggle:hover,
+html[data-theme="dark"] app-root .theme-toggle:hover {
+	background: #263a50;
+	border-color: #5a8b76;
+}
+
+html[data-theme="dark"] app-root .notification-panel-header {
+	background: #172337;
+	border-color: #34445d;
+}
+
+html[data-theme="dark"] app-root .notification-panel-header h2,
+html[data-theme="dark"] app-root .notification-item strong {
+	color: #e2e8f0;
+}
+
+html[data-theme="dark"] app-root .notification-panel-header p,
+html[data-theme="dark"] app-root .notification-empty,
+html[data-theme="dark"] app-root .notification-overflow {
+	color: #a7b5c8;
+}
+
+html[data-theme="dark"] app-root .notification-item {
+	border-color: #34445d;
+	color: #cbd5e1;
+}
+
+html[data-theme="dark"] app-root .notification-item:hover {
+	background: #203449;
+}
+
+button,
+input,
+select,
+textarea {
+	font-family: inherit;
+}
+
+.carta-state-badge {
+	display: inline-flex;
+	width: max-content;
+	max-width: 100%;
+	align-items: center;
+	margin-top: 5px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 1.2;
+	padding: 4px 7px;
+	white-space: nowrap;
+}
+
+.carta-state-badge--none {
+	border-color: #dbe3ec;
+	background: #f1f5f9;
+	color: #64748b;
+}
+
+.carta-state-badge--pending {
+	border-color: #fed7aa;
+	background: #fff7ed;
+	color: #b45309;
+}
+
+.carta-state-badge--sent {
+	border-color: #bfdbfe;
+	background: #eff6ff;
+	color: #1d4ed8;
+}
+
+.carta-state-badge--signed {
+	border-color: #bbf7d0;
+	background: #f0fdf4;
+	color: #15803d;
+}
+
+.carta-equipment-picker {
+	display: grid;
+	max-height: 250px;
+	gap: 8px;
+	overflow-y: auto;
+}
+
+.carta-equipment-option {
+	display: grid;
+	width: 100%;
+	min-height: 64px;
+	grid-template-columns: 18px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 11px;
+	border: 1px solid #d9e2ee;
+	border-radius: 8px;
+	background: #fff;
+	color: #10213e;
+	cursor: pointer;
+	padding: 10px 12px;
+	text-align: left;
+	transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.carta-equipment-option:hover {
+	border-color: #8fcdb3;
+	background: #f8fcfa;
+}
+
+.carta-equipment-option.selected {
+	border-color: #248365;
+	background: #f0fdf4;
+	box-shadow: 0 0 0 2px rgba(36, 131, 101, 0.12);
+}
+
+.carta-equipment-indicator {
+	width: 16px;
+	height: 16px;
+	border: 1.5px solid #94a3b8;
+	border-radius: 50%;
+	background: #fff;
+}
+
+.carta-equipment-option.selected .carta-equipment-indicator {
+	border: 5px solid #248365;
+}
+
+.carta-equipment-copy {
+	display: grid;
+	min-width: 0;
+	gap: 4px;
+}
+
+.carta-equipment-copy strong {
+	overflow: hidden;
+	font-size: 13px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.carta-equipment-copy small {
+	color: #64748b;
+	font-size: 11px;
+}
+
+.carta-equipment-condition {
+	border: 1px solid #dbe3ec;
+	border-radius: 5px;
+	background: #f1f5f9;
+	color: #64748b;
+	font-size: 10px;
+	font-weight: 700;
+	padding: 4px 6px;
+}
+
+.carta-picker-message {
+	border: 1px solid #dbe3ec;
+	border-radius: 8px;
+	background: #f8fafc;
+	color: #475569;
+	font-size: 12px;
+	line-height: 1.5;
+	padding: 13px 14px;
+}
+
+.carta-picker-message--error {
+	border-color: #fecaca;
+	background: #fef2f2;
+	color: #991b1b;
+}
+
+html[data-theme="dark"] app-root .report-page,
+html[data-theme="dark"] app-root .cartas-page,
+html[data-theme="dark"] app-root .historial-page,
+html[data-theme="dark"] app-root .config-page {
+	--ink: #e2e8f0;
+	--muted: #a7b5c8;
+	--border: #34445d;
+	background: #0f172a !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root :is(.table-panel, .metric, .order-row, .order-modal, .order-meta > div, .device-row) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.report-header h1, .panel-heading h2, .metric-copy strong, .order-info strong, .order-total strong, .modal-header h2, .order-meta dd, .devices-title, .device-row strong) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.subtitle, .metric-copy small, .panel-title .section-kicker, .search-field, .date-filter, .search-field span, .date-filter span, .order-info span, .order-comment, .order-total span, .order-meta dt, .device-row span, .device-row small) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.history-filters input, .history-filters select, .search-field input, .date-filter select) {
+	border-color: #465873 !important;
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.order-row:hover, .back-button:hover, .button-secondary:hover, .close-button:hover) {
+	border-color: #5a8b76 !important;
+	background: #203449 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.back-button, .button-secondary, .close-button) {
+	border-color: #465873 !important;
+	background: #1b2b3e !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.order-number, .metric-icon, .order-meta > div, .devices-title span) {
+	border-color: #40536b !important;
+	background-color: #203047 !important;
+	color: #b6e3cf !important;
+}
+
+html[data-theme="dark"] app-root .report-page :is(.order-total, .modal-header, .devices-title, .modal-actions) {
+	border-color: #34445d !important;
+}
+
+html[data-theme="dark"] app-root .report-page .empty-state {
+	border-color: #465873 !important;
+	background: #172337 !important;
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .panel {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.header-row h1, .filters-heading h2, .table-heading h2, .person-details strong) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.page-description, .filters-heading p, .filter-grid label, .type-filter, .filter-hint, .table-count, .scroll-hint, .cartas-table td, .id-cell, .additional-people small) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.filters, .table-heading, .cartas-table tbody tr, .cartas-table tbody tr:nth-child(even)) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .cartas-table th {
+	border-color: #34445d !important;
+	background: #203047 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.cartas-table tbody tr:hover, .cartas-table tbody tr:nth-child(even):hover) {
+	background: #203449 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.filter-grid input, .filter-grid select, .type-filter-options button, .btn-secondary) {
+	border-color: #465873 !important;
+	background: #111c2e !important;
+	color: #d5e0ee !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .cartas-page .type-filter-options button.active {
+	border-color: #4d9675 !important;
+	background: #1b342f !important;
+	color: #b6e3cf !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.type-filter-options button:hover:not(.active), .btn-secondary:hover:not(:disabled)) {
+	background: #263a50 !important;
+}
+
+html[data-theme="dark"] app-root .historial-page :is(.toolbar-panel, .history-panel) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .historial-page :is(.historial-header h1, .toolbar-heading h2, .history-heading h2, .user-cell, .detail-cell) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .historial-page :is(.page-description, .toolbar-heading p, .search-field, .module-field, .scroll-hint, .date-cell, .id-cell) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .historial-page :is(.search-input, .filter-select) {
+	border-color: #465873 !important;
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .historial-page .historial-table th {
+	border-color: #34445d !important;
+	background: #203047 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .historial-table td {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .export-btn {
+	border-color: #40536b !important;
+	background: #1b2b3e !important;
+	color: #b6e3cf !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .empty-state {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .config-page :is(.stat-item, .admin-card, .module-card, .workspace-panel, .catalog-card, .module-panel) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .config-page :is(.heading-block h1, .admin-info h2, .module-title-wrap h2, .panel-header h2, .config-summary h3, .catalog-body strong, .module-list) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .config-page :is(.intro, .admin-info small, .admin-info p, .module-title-wrap small, .module-description, .stat-item span, .catalog-body small) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .config-page .module-button {
+	border-color: #40536b !important;
+	background: #203047 !important;
+	color: #c7d8ef !important;
+}
+
+html[data-theme="dark"] app-root .config-page .module-button:hover {
+	background: #263a50 !important;
+}
+
+html[data-theme="dark"] app-root .config-page .panel-header {
+	border-color: #34445d !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page .panel-header {
+	border-color: #34445d !important;
+	background: linear-gradient(110deg, #172337 55%, #1b2b36) !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page :is(.category-total, .hostname-item, .summary-card, .state-card) {
+	border-color: #40536b !important;
+	background: #203047 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page .hostname-item.next {
+	background: #1b342f !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page :is(.hostname-icon, .model-count, .expand-mark) {
+	background: #29394d !important;
+	color: #c4d3e4 !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page .panel th {
+	border-color: #34445d !important;
+	background: #203047 !important;
+	color: #bdcada !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page .panel td {
+	border-color: #34445d !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page :is(.models-table tbody tr, .model-detail-cell, .model-detail-cell .table-wrap, .expanded-heading) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page .models-table tbody .model-row:hover {
+	background: #203449 !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page :is(.expanded-heading strong, .model-detail-state) {
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .modelos-page .model-detail-state button {
+	border-color: #465873 !important;
+	background: #1b2b3e !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-historial {
+	background: #0f172a !important;
+	color: #e2e8f0;
+}
+
+html[data-theme="dark"] app-root .app-content app-cartas-responsivas {
+	background: #0f172a !important;
+	color: #e2e8f0;
+}
+
+html[data-theme="dark"] app-root .historial-page .history-heading {
+	background: linear-gradient(110deg, #172337, #1b2b36) !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .historial-table th {
+	background: #26364e !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .historial-table tbody tr,
+html[data-theme="dark"] app-root .historial-page .historial-table tbody tr:nth-child(even) {
+	background: #172337 !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .historial-table tbody tr:hover,
+html[data-theme="dark"] app-root .historial-page .historial-table tbody tr:nth-child(even):hover {
+	background: #203449 !important;
+}
+
+html[data-theme="dark"] app-root .historial-page .scroll-hint {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .table-heading {
+	background: linear-gradient(110deg, #172337, #1b2b36) !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .scroll-hint {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .cartas-table tbody tr,
+html[data-theme="dark"] app-root .cartas-page .cartas-table tbody tr:nth-child(even) {
+	background: #172337 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .cartas-table tbody tr:hover,
+html[data-theme="dark"] app-root .cartas-page .cartas-table tbody tr:nth-child(even):hover {
+	background: #203449 !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page .cartas-table td {
+	background: transparent !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .cartas-page :is(.header-count, .table-count, .letter-type) {
+	border-color: #40536b !important;
+	background: #203047 !important;
+	color: #c9d7e6 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal {
+	border-color: #34445d !important;
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content :is(.carta-modal .panel-block, .carta-modal .equipment-picker .equipment-option, .carta-modal .employee-option, .carta-modal .success-detail) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content :is(.carta-modal .selected-person, .carta-modal .panel-block input[type="search"], .carta-modal .btn-secondary) {
+	border-color: #465873 !important;
+	background: #203047 !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal .selected-people-section {
+	border-color: #4d9675 !important;
+	background: #1b342f !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal .modal-footer {
+	border-color: #34445d !important;
+	background: rgb(17 28 46 / 96%) !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal :is(.equipment-option.selected, .equipment-option:not(button)) {
+	border-color: #40536b !important;
+	background: #203047 !important;
+	color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal :is(.selected-person, .picker-message, .success-detail) {
+	border-color: #40536b !important;
+	background: #203047 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal :is(.section-heading h3, .person-copy strong) {
+	color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal :is(.section-heading p, .equipment-option small, .person-copy small, .selected-people-heading p) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .carta-modal .btn-secondary:hover:not(:disabled) {
+	border-color: #5a8b76 !important;
+	background: #263a50 !important;
+	color: #f1f5f9 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel {
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel .detail-grid > div,
+html[data-theme="dark"] app-root .app-content .line-panel .locked-fields > div,
+html[data-theme="dark"] app-root .app-content .line-panel .employee-card {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel :is(.detail-grid small, .locked-fields small, .employee-card small, .field, .field > span, .field small, .trace-item small) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel :is(.detail-grid strong, .locked-fields strong, .employee-card strong, .trace-item strong, .trace-item p, .trace-empty h3) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel :is(input, select, textarea) {
+	border-color: #465873 !important;
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel :is(.detail-tabs, .panel-actions, .trace-list article) {
+	border-color: #34445d !important;
+}
+
+html[data-theme="dark"] app-root .app-content .line-panel .trace-empty {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-usuarios .usuarios-module {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-usuarios :is(.user-form, .user-card, .empty-state) {
+	border-color: #34445d !important;
+	background: #111c2e !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-usuarios :is(.module-toolbar h2, .user-content strong, .field, .search-box) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-usuarios :is(.user-content small, .empty-state) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-usuarios :is(.user-form input, .search-box input) {
+	border-color: #465873 !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo .reasignacion-modal {
+	border-color: #34445d !important;
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo :is(.selection-summary, .destination-section, .device-picked, .device-option, .employee-option, .modal-loading p) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo .current-owner {
+	border-color: #3c6658 !important;
+	background: #1b342f !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo :is(.section-heading h2, .device-picked strong, .device-option strong, .employee-option strong, .current-owner strong) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo :is(.section-heading p, .device-picked span, .device-option span, .device-option small, .employee-option small, .current-owner > span, .current-owner small, .field-label, .empty-message, .modal-loading) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo .reasignacion-modal input[type="search"] {
+	border-color: #465873 !important;
+	background: #0f172a !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo .employee-option.selected,
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo .device-option.selected {
+	border-color: #4d9675 !important;
+	background: #1b342f !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-reasignar-equipo .reasignacion-actions {
+	border-color: #34445d !important;
+	background: rgb(17 28 46 / 96%) !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles,
+html[data-theme="dark"] app-root .app-content app-empleado-perfil {
+	background: #0f172a !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles :is(.detail-content, .trace-list, .edit-panel),
+html[data-theme="dark"] app-root .app-content app-empleado-perfil :is(.detail-content, .equipment-content) {
+	border-color: #34445d !important;
+	background: #172337 !important;
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles :is(.detail-grid > div:not(.actions), .detail-grid > label, .employee-card),
+html[data-theme="dark"] app-root .app-content app-empleado-perfil :is(.info-grid > div, .detail-grid label, .edit-grid label, .equipment-row) {
+	border-color: #34445d !important;
+	background: #203047 !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles :is(.section-title, .detail-grid strong, .employee-card strong, .trace-list strong, .edit-panel h2),
+html[data-theme="dark"] app-root .app-content app-empleado-perfil :is(.section-heading h2, .info-grid strong, .equipment-main strong) {
+	color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles :is(.detail-grid small, .detail-grid > label, .employee-card small, .trace-list small, .trace-list p, .edit-panel label),
+html[data-theme="dark"] app-root .app-content app-empleado-perfil :is(.info-grid small, .detail-grid label small, .edit-grid label small, .edit-form label, .equipment-main small) {
+	color: #b7c4d5 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles :is(.detail-grid > label input, .detail-grid > label textarea, .edit-panel input, .edit-panel textarea),
+html[data-theme="dark"] app-root .app-content app-empleado-perfil :is(.detail-grid input, .detail-grid select, .detail-grid textarea, .edit-grid input, .edit-grid select, .edit-grid textarea, .edit-form input, .edit-form select) {
+	border-color: #465873 !important;
+	background: #111c2e !important;
+	color: #e2e8f0 !important;
+	color-scheme: dark;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles .detail-grid > label input:disabled {
+	border-color: #34445d !important;
+	background: #26364e !important;
+	color: #a7b5c8 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles .employee-card:hover:not(:disabled),
+html[data-theme="dark"] app-root .app-content app-empleado-perfil .equipment-row:hover {
+	border-color: #5a8b76 !important;
+	background: #263a50 !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-empleado-perfil .section-heading > span {
+	border-color: #40536b !important;
+	background: #203047 !important;
+	color: #b6e3cf !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-empleado-perfil .section-spaced,
+html[data-theme="dark"] app-root .app-content app-empleado-perfil .actions {
+	border-color: #34445d !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-empleado-perfil .equipment-icon {
+	border-color: #40536b !important;
+	background: #29394d !important;
+	color: #b6e3cf !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-empleado-perfil :is(.back-button, .btn-secondary) {
+	border-color: #465873 !important;
+	background: #1b2b3e !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-equipo-detalles :is(.back-button, .btn-secondary) {
+	border-color: #465873 !important;
+	background: #1b2b3e !important;
+	color: #d5e0ee !important;
+}
+
+html[data-theme="dark"] app-root .app-content app-empleado-perfil .state-message,
+html[data-theme="dark"] app-root .app-content app-equipo-detalles .state-message {
+	border-color: #465873 !important;
+	background: #172337 !important;
+	color: #b7c4d5 !important;
+}
+
+@media (max-width: 520px) {
+	.carta-equipment-option {
+		grid-template-columns: 18px minmax(0, 1fr);
+	}
+
+	.carta-equipment-condition {
+		grid-column: 2;
+		justify-self: start;
+	}
+}

@@ -1,0 +1,95 @@
+<section class="reasignacion-modal" role="dialog" aria-modal="true" aria-labelledby="reasignacion-title">
+  @if (cargando) {
+    <div class="modal-loading">
+      <p>Cargando empleados...</p>
+    </div>
+  } @else {
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">Asignación de inventario</p>
+        <h1 id="reasignacion-title">Reasignar equipo</h1>
+      </div>
+      <button type="button" class="close-button" aria-label="Cerrar reasignación" (click)="cerrar()">×</button>
+    </header>
+
+    <div class="selection-summary">
+      <div class="section-heading">
+        <div>
+          <h2>Equipo a reasignar</h2>
+          <p>Selecciona el equipo que cambiará de responsable.</p>
+        </div>
+        <span class="pill">{{ equiposDisponibles().length }} {{ equiposDisponibles().length === 1 ? 'equipo' : 'equipos' }}</span>
+      </div>
+      @if (equiposDisponibles().length > 1) {
+        <div class="device-list" role="listbox" aria-label="Equipos asignados">
+          @for (equipoActual of equiposDisponibles(); track equipoActual.Service_Tag) {
+            <button type="button" class="device-option" role="option" [attr.aria-selected]="equipoSeleccionado?.Service_Tag === equipoActual.Service_Tag" [class.selected]="equipoSeleccionado?.Service_Tag === equipoActual.Service_Tag" (click)="seleccionarEquipo(equipoActual)">
+              <strong>{{ equipoActual.Service_Tag }}</strong>
+              <span>{{ equipoActual.Hostname || 'Sin hostname' }}</span>
+              <span>{{ equipoActual.Marca || 'Sin marca' }} {{ equipoActual.Modelo || 'Sin modelo' }}</span>
+              <small>{{ equipoActual.Tipo_Equipo || 'Sin tipo' }}</small>
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="device-picked">
+          <strong>{{ equipoSeleccionado?.Service_Tag }}</strong>
+          <span>{{ equipoSeleccionado?.Hostname || 'Sin hostname' }}</span>
+          <span>{{ equipoSeleccionado?.Marca || 'Sin marca' }} {{ equipoSeleccionado?.Modelo || 'Sin modelo' }}</span>
+          <small>{{ equipoSeleccionado?.Tipo_Equipo || 'Sin tipo' }}</small>
+        </div>
+      }
+    </div>
+
+    <div class="current-owner">
+      <span>Empleado actual</span>
+      <strong>{{ empleadoActualAsignado()?.Full_Name || 'Sin asignar' }}</strong>
+      <small>Payroll: {{ empleadoActualAsignado()?.Payroll ?? 'Sin asignar' }}</small>
+    </div>
+
+    @if (cargandoCarta) {
+      <p class="carta-warning">Verificando si el equipo tiene una carta activa...</p>
+    } @else if (errorCargaCarta) {
+      <p class="carta-warning carta-warning-error">No se pudo verificar la carta activa del equipo.</p>
+    } @else if (cartaActivaEquipo) {
+      <p class="carta-warning">Este equipo tiene una carta activa. Al reasignarlo, la carta actual se cerrará y podrás generar una nueva para el empleado destino.</p>
+    }
+
+    <section class="destination-section" aria-labelledby="destination-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="destination-title">Empleado destino</h2>
+          <p>Busca y selecciona a quién se asignará el equipo.</p>
+        </div>
+      </div>
+      <label class="field-label" for="buscar-empleado">Buscar empleado</label>
+      <input id="buscar-empleado" type="search" [formControl]="busqueda" placeholder="Payroll, nombre, departamento o área...">
+
+      @if (empleadosFiltrados().length === 0) {
+        <p class="empty-message">No se encontraron empleados activos con ese criterio.</p>
+      } @else {
+        <div class="empleados-lista" aria-label="Empleados disponibles">
+          @for (empleado of empleadosFiltrados(); track empleado.Payroll) {
+            <button type="button" class="employee-option" [class.selected]="empleadoSeleccionado === empleado.Payroll" [attr.aria-pressed]="empleadoSeleccionado === empleado.Payroll" (click)="seleccionarEmpleado(empleado.Payroll)">
+              <span class="employee-avatar" aria-hidden="true">{{ empleado.Full_Name.slice(0, 2).toUpperCase() }}</span>
+              <span class="employee-copy">
+                <strong>{{ empleado.Full_Name }}</strong>
+                <small>Payroll {{ empleado.Payroll }} · {{ empleado.Departament || 'Sin departamento' }} · {{ empleado.Area || 'Sin área' }}</small>
+              </span>
+              <span class="selection-check" aria-hidden="true">✓</span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+
+    <div class="reasignacion-actions">
+      <button type="button" class="btn-secondary" (click)="cerrar()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="guardar()" [disabled]="guardando || empleadoSeleccionado === null || !equipoSeleccionado">
+        {{ guardando ? 'Reasignando...' : 'Confirmar reasignación' }}
+      </button>
+    </div>
+  }
+</section>
+@if (mensaje) { <app-alert type="info" title="Asignación completada" [message]="mensaje" /> }
+@if (error) { <app-alert type="error" title="No se pudo completar la operación" [message]="error" /> }

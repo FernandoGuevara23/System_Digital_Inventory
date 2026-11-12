@@ -1,0 +1,318 @@
+<main class="equipment-page">
+  <header class="screen-header">
+    <div>
+      <h1>Equipos</h1>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-primary" (click)="alternarFormulario()">
+        <ng-icon name="tablerDevicesPlus" size="1.25em" aria-hidden="true"></ng-icon>
+        <span>{{ mostrarFormulario ? 'Cerrar formulario' : 'Nuevo equipo' }}</span>
+      </button>
+      <button type="button" class="btn-secondary upload-button" [class.uploading]="cargandoExcel" [disabled]="cargandoExcel" (click)="abrirSelectorExcel(archivoExcelInput)">
+        <ng-icon name="phosphorMicrosoftExcelLogoLight" size="1.25em" aria-hidden="true"></ng-icon>
+        <span>{{ cargandoExcel ? 'Importando...' : 'Importar Excel' }}</span>
+      </button>
+      <input #archivoExcelInput class="excel-file-input" type="file" accept=".xlsx,.xls" [disabled]="cargandoExcel" (change)="archivoSeleccionado($event)" >
+      <button type="button" class="btn-secondary" [disabled]="descargandoPlantilla" (click)="descargarPlantilla()">
+        <ng-icon name="phosphorMicrosoftExcelLogoLight" size="1.2em" aria-hidden="true"></ng-icon>
+        <span>{{ descargandoPlantilla ? 'Descargando...' : 'Descargar plantilla' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="stats-row">
+    <article class="stat-card"><span>Total</span><strong>{{ cantidadTotal() }}</strong></article>
+    <article class="stat-card green"><span>Disponibles</span><strong>{{ cantidadDisponibles() }}</strong></article>
+    <article class="stat-card blue"><span>Asignados</span><strong>{{ cantidadAsignados() }}</strong></article>
+    <article class="stat-card cyan"><span>Con proyecto</span><strong>{{ cantidadConProyecto() }}</strong></article>
+    <article class="stat-card purple"><span>Último Service Tag</span><strong>{{ elUltimoServiceTag() || 'N/A' }}</strong></article>
+  </section>
+
+  @if (mostrarFormulario) {
+    <div class="modal-backdrop" (click)="alternarFormulario()">
+      <section class="create-modal" role="dialog" aria-modal="true" aria-labelledby="new-equipment-title" (click)="$event.stopPropagation()">
+      <header class="modal-header"><h2 id="new-equipment-title">Nuevo equipo</h2><button type="button" class="modal-close" aria-label="Cerrar" (click)="alternarFormulario()">×</button></header>
+      <form [formGroup]="equipoForm" (ngSubmit)="guardarEquipo()" (click)="cerrarSelectorEmpleadosEnFormulario($event)" class="form-grid">
+        <label>Service Tag<input formControlName="Service_Tag"></label>
+        @if (esTipoTelefonoSeleccionado()) {
+          <label>IMEI<input formControlName="IMEI"></label>
+        } @else {
+          <label>Hostname<input formControlName="Hostname" maxlength="50"></label>
+        }
+        <label>MAC <input formControlName="MAC" maxlength="30"></label>
+        <div class="employee-picker-field">
+          <label for="new-equipment-employee">Empleado</label>
+          <div class="employee-picker-control">
+            <input id="new-equipment-employee" type="text" [formControl]="empleadoBusquedaControl" placeholder="Buscar por nombre o payroll..." role="combobox" aria-autocomplete="list" aria-controls="employee-picker-options" [attr.aria-expanded]="selectorEmpleadosAbierto" (focus)="selectorEmpleadosAbierto = true" (input)="buscarEmpleados()">
+            @if (equipoForm.controls.Payroll.value) {
+              <button type="button" class="employee-picker-clear" aria-label="Quitar empleado seleccionado" (click)="limpiarEmpleadoSeleccionado()">×</button>
+            }
+          </div>
+          @if (selectorEmpleadosAbierto) {
+            <div class="employee-picker-list" id="employee-picker-options" role="listbox">
+              @if (empleadosFiltrados().length) {
+                <p class="employee-picker-count">{{ empleadosFiltrados().length === 40 ? 'Mostrando los primeros 40 resultados' : empleadosFiltrados().length + ' empleados encontrados' }}</p>
+                @for (empleado of empleadosFiltrados(); track empleado.Payroll) {
+                  <button type="button" class="employee-picker-option" role="option" [attr.aria-selected]="equipoForm.controls.Payroll.value === empleado.Payroll" (click)="seleccionarEmpleado(empleado)">
+                    <span class="employee-picker-avatar" aria-hidden="true">{{ empleado.Full_Name.slice(0, 2).toUpperCase() }}</span>
+                    <span class="employee-picker-details">
+                      <strong>{{ empleado.Full_Name }}</strong>
+                      <small>Payroll {{ empleado.Payroll }} · {{ empleado.Departament || 'Sin departamento' }}</small>
+                      @if (empleado.Position) { <small>{{ empleado.Position }}</small> }
+                    </span>
+                  </button>
+                }
+              } @else {
+                <p class="employee-picker-empty">No se encontraron empleados con esa búsqueda.</p>
+              }
+            </div>
+          }
+          @if (equipoForm.controls.Payroll.value) {
+            <small class="employee-picker-selected">Empleado asignado · Payroll {{ equipoForm.controls.Payroll.value }}</small>
+          }
+        </div>
+        <label>Tipo de equipo<select formControlName="Tipo_Equipo"><option value="">Seleccione</option>@for (tipo of tiposEquipo; track tipo.Id) {<option [value]="tipo.Nombre_Tipo_Equipo">{{ tipo.Nombre_Tipo_Equipo }}</option>}</select></label>
+        <label>Marca<input formControlName="Marca"></label>
+        <label>Modelo<input formControlName="Modelo"></label>
+        <label>Accesorios<input formControlName="Accesorios"></label>
+        <label>Ubicación<input formControlName="Location"></label>
+        <label>Proyecto<select formControlName="Proyecto"><option value="">Sin proyecto</option>@for (proyecto of proyectos; track proyecto.Id) {<option [value]="proyecto.Nombre_Proyecto">{{ proyecto.Nombre_Proyecto }}</option>}</select></label>
+        <label class="field-full">Comentarios<textarea formControlName="Comments"></textarea></label>
+        <div class="form-actions field-full"><button type="submit" class="btn-primary">Guardar equipo</button></div>
+      </form>
+      </section>
+    </div>
+  }
+
+  @if (mensaje) { <app-alert [type]="tipoMensaje" title="Operación completada" [message]="mensaje" (dismissed)="mensaje = ''" /> }
+  @if (error) { <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" /> }
+
+  <label class="search-field equipment-search">
+    <input class="search-input" type="search" [formControl]="busquedaEquiposControl" placeholder="Service Tag, hostname, empleado..." aria-label="Buscar equipos por Service Tag, hostname o empleado">
+  </label>
+
+  <section class="filter-panel" aria-label="Filtros de equipos">
+    <nav class="filter-group status-filter-group" aria-label="Filtrar por asignación">
+      <span class="filter-label">Estado del inventario</span>
+      <div class="filter-options">
+        <button type="button" [class.active]="vistaEquipos === 'todos'" (click)="cambiarVista('todos')">Todos <span>{{ cantidadTotal() }}</span></button>
+        <button type="button" [class.active]="vistaEquipos === 'disponibles'" (click)="cambiarVista('disponibles')">Disponibles <span>{{ cantidadDisponibles() }}</span></button>
+        <button type="button" [class.active]="vistaEquipos === 'asignados'" (click)="cambiarVista('asignados')">Asignados <span>{{ cantidadAsignados() }}</span></button>
+        <button type="button" [class.active]="vistaEquipos === 'proyectos'" (click)="cambiarVista('proyectos')">Con proyecto <span>{{ cantidadConProyecto() }}</span></button>
+      </div>
+    </nav>
+    <nav class="filter-group carta-filters" aria-label="Filtrar equipos por carta">
+      <span class="filter-label">Carta responsiva</span>
+      <div class="filter-options">
+        <button type="button" [class.active]="filtroCarta === 'TODOS'" (click)="cambiarFiltroCarta('TODOS')">Todas</button>
+        <button type="button" [disabled]="cargandoCartas || !!errorCartas" [class.active]="filtroCarta === 'INDIVIDUAL'" (click)="cambiarFiltroCarta('INDIVIDUAL')">Individual</button>
+        <button type="button" [disabled]="cargandoCartas || !!errorCartas" [class.active]="filtroCarta === 'COMPARTIDA'" (click)="cambiarFiltroCarta('COMPARTIDA')">Compartida</button>
+        <button type="button" [disabled]="cargandoCartas || !!errorCartas" [class.active]="filtroCarta === 'SIN_ENVIAR'" (click)="cambiarFiltroCarta('SIN_ENVIAR')">Sin enviar</button>
+        @if (cargandoCartas) {
+          <small>Consultando cartas...</small>
+        } @else if (errorCartas) {
+          <small class="carta-filter-error">{{ errorCartas }}</small>
+          <button type="button" (click)="cargarCartas()">Reintentar</button>
+        }
+      </div>
+    </nav>
+     <nav class="filter-group category-filter-group" aria-label="Filtrar por tipo de equipo">
+      <span class="filter-label">Tipo de equipo</span>
+      <select
+        #categoryFilter
+        class="category-select"
+        [value]="categoriaSeleccionada"
+        (change)="seleccionarCategoria(categoryFilter.value)"
+        aria-label="Seleccionar tipo de equipo"
+      >
+        <option value="">Todos los tipos</option>
+        @for (tipo_equipo of tiposEquipo; track tipo_equipo.Id) {
+          <option [value]="tipo_equipo.Nombre_Tipo_Equipo">{{ tipo_equipo.Nombre_Tipo_Equipo }}</option>
+        }
+      </select>
+    </nav>
+
+  </section>
+
+
+  @if (cargandoEquipos && !equiposCargados) {
+    <p class="empty-state" role="status">Cargando equipos...</p>
+  } @else if (!equiposCargados) {
+    <p class="empty-state" role="alert">No fue posible cargar el inventario.</p>
+  } @else if (conteosEquipos.registros === 0) {
+    <p class="empty-state">No hay equipos registrados.</p>
+  } @else if (equipos.length === 0) {
+    <p class="empty-state">No se encontraron equipos con estos filtros.</p>
+  } @else {
+    <section class="cards-grid" aria-label="Lista de equipos" [attr.aria-busy]="cargandoEquipos">
+      @for (equipo of equiposFiltrados(); track equipo.Service_Tag) {
+        <button type="button" class="equipment-card" (click)="abrirEquipo(equipo)">
+          <div class="card-top">
+            <div class="equipment-icon detail-link" (click)="abrirDetalleEquipo(equipo); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="abrirDetalleEquipo(equipo)">▣</div>
+            <div class="card-title"><h2 class="detail-link" (click)="abrirDetalleEquipo(equipo); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="abrirDetalleEquipo(equipo)">Service Tag: {{ equipo.Service_Tag }}</h2><p>Hostname: {{ equipo.Hostname || '—' }}</p><p>Marca: {{ equipo.Marca }} · Modelo: {{ equipo.Modelo }}</p></div>
+            <span class="status" [class.status-assigned]="estadoVisible(equipo) === 'Asignado'" [class.status-inactive]="estadoVisible(equipo) === 'Inactivo'">{{ estadoVisible(equipo) }}</span>
+          </div>
+          <div class="card-bottom">
+            <span>{{ equipo.Empleado?.Full_Name || 'Sin asignar' }}</span>
+            <span>{{ departamentoDe(equipo) || 'Sin departamento' }}</span>
+          </div>
+          @if (equipo.Proyecto) { <div class="project-tag">Proyecto: {{ equipo.Proyecto }}</div> }
+        </button>
+      }
+    </section>
+  }
+
+  @if (totalEquipos > 0) {
+    <nav class="equipment-pagination" aria-label="Paginación de equipos">
+      <span aria-live="polite">
+        Mostrando {{ (paginaActual - 1) * equiposPorPagina + (equipos.length ? 1 : 0) }}–{{ (paginaActual - 1) * equiposPorPagina + equipos.length }}
+        de {{ totalEquipos }}
+      </span>
+      <div>
+        <button type="button" class="btn-secondary" [disabled]="paginaActual <= 1 || cargandoEquipos" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+        <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button type="button" class="btn-secondary" [disabled]="paginaActual >= totalPaginas || cargandoEquipos" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+      </div>
+    </nav>
+  }
+</main>
+
+@if (equipoSeleccionado; as equipo) {
+  <aside class="equipment-panel" aria-label="Detalle del equipo">
+    <header class="panel-header">
+      <button type="button" class="panel-close" aria-label="Cerrar detalle" (click)="cerrarEquipo()">×</button>
+      <div class="detail-heading"><div class="equipment-icon" (click)="abrirDetalleEquipo(equipo); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="abrirDetalleEquipo(equipo)">▣</div><div><small>Marca: {{ equipo.Marca }} Modelo: {{ equipo.Modelo }}</small><h2 class="detail-link" (click)="abrirDetalleEquipo(equipo); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="abrirDetalleEquipo(equipo)">Service Tag: {{ equipo.Service_Tag }} · Hostname: {{ equipo.Hostname }}</h2><span class="status" [class.status-assigned]="estadoVisible(equipo) === 'Asignado'">{{ estadoVisible(equipo) }}</span></div></div>
+    </header>
+    <div class="panel-body">
+      <nav class="detail-tabs" aria-label="Secciones del equipo">
+        <button type="button" [class.active]="pestanaEquipo === 'detalle'" (click)="pestanaEquipo = 'detalle'">Detalle</button>
+        <button type="button" [class.active]="pestanaEquipo === 'trace'" (click)="pestanaEquipo = 'trace'" aria-live="polite">
+          Trace ({{ cargandoTrace ? 'Cargando…' : historialEquipo.length }})
+        </button>
+      </nav>
+      @if (pestanaEquipo === 'detalle') {
+        @if (editandoEquipo) {
+          <form class="detail-grid edit-grid" [formGroup]="equipoEditForm" (ngSubmit)="guardarEdicionEquipo()">
+            @if (esTelefono(equipo)) {
+              <label><small>IMEI</small><input formControlName="IMEI"></label>
+              <label><small>Número telefónico</small><input formControlName="Numero_Telefono"></label>
+              <label><small>Cuenta</small><input formControlName="Account"></label>
+              <label><small>Apple ID</small><input formControlName="Apple_ID"></label>
+              <label><small>Contraseña Apple</small><input formControlName="Password_apple"></label>
+            } @else {
+              <label><small>Hostname</small><input formControlName="Hostname" maxlength="50"></label>
+            }
+            <label><small>MAC</small><input formControlName="MAC" maxlength="30"></label>
+            <label><small>Marca</small><input formControlName="Marca"></label>
+            <label><small>Modelo</small><input formControlName="Modelo"></label>
+            <label><small>MQ Asset</small><input formControlName="MQ_Asset"></label>
+            <label><small>Accesorios</small><input formControlName="Accesorios"></label>
+            <label><small>Ubicación</small><input formControlName="Location"></label>
+            <label><small>Proyecto</small><select formControlName="Proyecto"><option value="">Sin proyecto</option>@for (proyecto of proyectos; track proyecto.Id) {<option [value]="proyecto.Nombre_Proyecto">{{ proyecto.Nombre_Proyecto }}</option>}</select></label>
+
+            <label class="wide"><small>Comentarios</small><textarea formControlName="Comments"></textarea></label>
+            <div class="panel-actions wide">
+              <button type="submit" class="btn-primary" [disabled]="guardandoEdicionEquipo" (click)="guardarEdicionEquipo()">{{ guardandoEdicionEquipo ? 'Guardando...' : 'Guardar cambios' }}</button>
+              <button type="button" class="btn-secondary" [disabled]="guardandoEdicionEquipo" (click)="cancelarEdicionEquipo()">Cancelar</button>
+            </div>
+          </form>
+        } @else {
+          <div class="detail-grid">
+            <div><small>Service Tag</small><strong>{{ equipo.Service_Tag }}</strong></div><div><small>Hostname</small><strong>{{ equipo.Hostname || '—' }}</strong></div><div><small>MAC</small><strong>{{ equipo.MAC || '—' }}</strong></div>
+            <div><small>Marca</small><strong>{{ equipo.Marca }}</strong></div><div><small>Modelo</small><strong>{{ equipo.Modelo }}</strong></div>
+            <div><small>Tipo</small><strong>{{ equipo.Tipo_Equipo }}</strong></div>
+            <div><small>IMEI</small><strong>{{ equipo.IMEI || '—' }}</strong></div><div><small>MQ Asset</small><strong>{{ equipo.MQ_Asset || '—' }}</strong></div>
+            <div><small>Ubicación</small><strong>{{ equipo.Location || '—' }}</strong></div>
+
+           @if (esTelefono(equipo)) {
+            <div><small>Número telefónico</small><strong>{{ equipo.Numero_Telefono || '—' }}</strong></div>
+            <div><small>Cuenta</small><strong>{{ equipo.Account || '—' }}</strong></div>
+            <div><small>Apple ID</small><strong>{{ equipo.Apple_ID || '—' }}</strong></div>
+            <div><small>Contraseña Apple</small><strong>{{ equipo.Password_apple || '—' }}</strong></div>
+           }
+           @if (equipo.Proyecto) {
+            <div><small>Proyecto</small><strong>{{ equipo.Proyecto }}</strong></div>
+           }
+          </div>
+          <section class="detail-grid letter-summary" aria-label="Carta responsiva del equipo">
+            <h3 class="wide">Carta responsiva</h3>
+            @if (errorCartas) {
+              <p class="letter-error">{{ errorCartas }}</p>
+              <button type="button" class="btn-secondary" (click)="cargarCartas()">Reintentar</button>
+            } @else {
+              <div class="letter-summary-row">
+                <small>Estado</small>
+                <strong>{{ estadoCartaTexto(cartaRecienteDeEquipo(equipo.Service_Tag)) }}</strong>
+              </div>
+              @if (cartaRecienteDeEquipo(equipo.Service_Tag); as cartaEquipo) {
+                <div class="letter-summary-row">
+                  <small>Tipo</small>
+                  <strong>{{ tipoCartaTexto(cartaEquipo) }}</strong>
+                </div>
+                @if (cartaEquipo.tipo_carta === 'COMPARTIDA') {
+                  <div class="letter-summary-row letter-shared-people">
+                    <small>Compartida con</small>
+                    <strong>{{ personasCompartidasDeCarta(cartaEquipo) || 'Sin personas adicionales registradas' }}</strong>
+                  </div>
+                }
+              }
+            }
+          </section>
+          <button type="button" class="employee-card" [disabled]="!equipo.Empleado" (click)="abrirEmpleadoDesdePanel(equipo)">
+            <span class="employee-avatar">{{ equipo.Empleado?.Full_Name?.slice(0, 2)?.toUpperCase() || '—' }}</span>
+            <span><small>Asignado a</small><strong>{{ equipo.Empleado?.Full_Name || 'Sin asignar' }}</strong><small>{{ equipo.Empleado ? 'Ver perfil del empleado' : 'Equipo disponible' }}</small></span>
+          </button>
+          <div class="panel-actions">
+          <button type="button" class="btn-secondary" (click)="iniciarEdicionEquipo()" aria-label="Editar equipo" title="Editar equipo"><ng-icon name="aspectsEdit" size="1.2em" aria-hidden="true"></ng-icon><span>Editar</span></button>
+          <button type="button" class="btn-secondary" [disabled]="equipo.Estado === 'Inactivo'" (click)="abrirReasignacionDesdePanel()" aria-label="Reasignar equipo" title="Reasignar equipo"><ng-icon name="phosphorArrowsLeftRightBold" size="1.2em" aria-hidden="true"></ng-icon><span>Reasignar</span></button>
+          <button type="button" class="btn-warning" [disabled]="equipo.Estado === 'Inactivo'" (click)="enviarAScrap()" aria-label="Enviar a scrap" title="Enviar a scrap"><ng-icon name="lucideRecycle" size="1.2em" aria-hidden="true"></ng-icon><span>Enviar a scrap</span></button>
+          <button type="button" class="btn-warning" [disabled]="equipo.Estado === 'Inactivo'" (click)="enviarADonacion()" aria-label="Enviar a donación" title="Enviar a donación"><ng-icon name="phosphorGiftDuotone" size="1.2em" aria-hidden="true"></ng-icon><span>Donar</span></button>
+          <button type="button" class="btn-warning" [disabled]="equipo.Estado === 'Inactivo'" (click)="enviarAProduccion()" aria-label="Enviar a producción" title="Enviar a producción"><ng-icon name="aspectsDashboard" size="1.2em" aria-hidden="true"></ng-icon><span>Producción</span></button>
+          <button type="button" class="btn-warning" [disabled]="equipo.Estado === 'Inactivo'" (click)="enviarAVentas()" aria-label="Enviar a ventas" title="Enviar a ventas"><ng-icon name="lucideShoppingBag" size="1.2em" aria-hidden="true"></ng-icon><span>Ventas</span></button>
+          <button type="button" class="btn-primary" [disabled]="equipo.Estado === 'Inactivo' || !equipo.Payroll || !equipo.Empleado || verificandoCartaActiva" (click)="abrirCartaDesdePanel('INDIVIDUAL')">
+            @if (verificandoCartaActiva) {
+              Verificando carta...
+            } @else {
+              <ng-icon name="fluentPersonEdit" size="1.2em" aria-hidden="true"></ng-icon><span>Carta individual</span>
+            }
+          </button>
+          <button type="button" class="btn-primary" [disabled]="equipo.Estado === 'Inactivo' || !equipo.Payroll || !equipo.Empleado || verificandoCartaActiva" (click)="abrirCartaDesdePanel('COMPARTIDA')">
+            @if (verificandoCartaActiva) {
+              Verificando carta...
+            } @else {
+              <ng-icon name="fluentPeopleEditFilled" size="1.2em" aria-hidden="true"></ng-icon><span>Carta compartida</span>
+            }
+          </button>
+          </div>
+        }
+      } @else {
+        <section class="trace-list">
+          @if (cargandoTrace) {
+            <p class="empty-panel">Cargando trace...</p>
+          } @else if (!historialEquipo.length) {
+            <p class="empty-panel">Sin movimientos registrados.</p>
+          }
+          @for (movimiento of historialEquipo; track movimiento.Id) {
+            <article class="trace-item">
+              <div><strong>{{ movimiento.Accion }}</strong><small>{{ movimiento.Fecha | date:'dd-MM-yyyy' }}</small></div>
+              <p>{{ movimiento.Detalle || 'Sin detalle' }}</p>
+            </article>
+          }
+        </section>
+      }
+    </div>
+  </aside>
+}
+
+@if (equipoParaReasignar) {
+  <app-reasignar-equipo [equipo]="equipoParaReasignar" (cancelar)="cerrarReasignacion()" (reasignado)="finalizarReasignacionDesdePanel()" />
+}
+@if (tipoCartaModal && equipoSeleccionado) {
+  <app-carta-generacion
+    [tipo]="tipoCartaModal"
+    [equipoContexto]="equipoSeleccionado"
+    (generada)="cartaGenerada($event)"
+    (enviada)="cartaEnviada($event)"
+    (cancelado)="cerrarModalCarta()"
+  />
+}

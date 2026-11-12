@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IT Asset Agreement</title>
+    <style>
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: letter;
+            margin: 12mm 15mm 15mm 15mm;
+            
+            @bottom-left {
+                content: "MQ IT • IT Asset Agreement";
+                font-family: Arial, sans-serif;
+                font-size: 7pt;
+                color: #888;
+            }
+            @bottom-right {
+                content: "FO-ITS-005 • Revision 04 • Page " counter(page) " of " counter(pages);
+                font-family: Arial, sans-serif;
+                font-size: 7pt;
+                color: #888;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            color: #333333;
+        }
+
+        :root {
+            --teal: #317681;
+           --verdesito: #136e61;
+            --gray-bg: rgb(222, 236, 236);
+            --border: #b4c5c7;
+        }
+
+        .header-title-style { font-size: 15pt; }   
+        .header-center-style { font-size: 13pt; }  
+        .header-right-style { font-size: 8.5pt; }  
+        
+        .badge-style { font-size: 9.5pt; width: 20px; height: 20px; } 
+        .section-title-style { font-size: 11pt; }  
+        .subheading-style { font-size: 10.5pt; }     
+        
+        .body-text-style { font-size: 8pt; line-height: 1.35; text-align: justify; }   
+        .rule-text-style { font-size: 8.5pt; text-align: justify; }     
+        .table-text-style { font-size: 15pt; }      
+        .th-text-style { font-size: 9pt; }         
+        .sig-text-style { font-size: 8.5pt; }
+        .texto_datos { font-size: 10pt; text-align: justify; }     
+
+
+
+        .doc-header {
+            background-color: var(--teal);
+            color: #ffffff;
+            padding: 10px 15px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-header { display: flex; align-items: center; margin-top: 14px; }
+        .section-badge {
+            background-color: var(--verdesito);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .section-divider { border-bottom: 1.5px solid var(--teal); margin-top: 4px; margin-bottom: 12px; }
+        .sub-heading {
+            color: var(--teal);
+            font-weight: bold;
+            border-bottom: 1.5px solid var(--teal);
+            display: inline-block;
+            margin: 12px 0 6px 0;
+            padding-bottom: 2px;
+        }
+        p { margin-top: 0; margin-bottom: 10px; }
+
+        .digital-record { width: 100%; border-collapse: collapse; border: 1px solid var(--border); margin-bottom: 12px; }
+        .dr-left { width: 120px; border-right: 1px solid var(--border); color: var(--teal); font-weight: bold; letter-spacing: 2.5px; vertical-align: top; padding: 10px; text-align: center; }
+        .dr-right { color: #333333; padding: 10px; line-height: 1.25; text-align: justify; }
+        .dr-right ul { margin: 2px 0 0 0; padding-left: 15px; }
+
+        .rule-block {
+            background-color: var(--gray-bg);
+            border-left: 11px solid var(--teal);
+            padding: 5px 8px;
+            margin-bottom: 3.5px;
+            line-height: 1.25;
+            text-align: justify;
+        }
+
+     
+        .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 12px; }
+        .data-table th { 
+            color: var(--teal); 
+            background-color: var(--gray-bg); 
+            border: 1px solid var(--border); 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 10px; 
+        }
+        .data-table td { border: 1px solid var(--border); height: 70px; text-align: center; vertical-align: middle; padding: 4px; background-color: #ffffff; }
+        .accessories-cell { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+
+        .notes-box {
+            border: 1px solid var(--border);
+            min-height: 100px;
+            padding: 4px 8px;
+            margin-bottom: 15px;
+            line-height: 24px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            background-image: repeating-linear-gradient(transparent, transparent 23px, #ebebeb 24px);
+        }
+
+        .sig-table { width: 100%; border: 0; margin-top: 10px; break-inside: avoid; page-break-inside: avoid; }
+        .sig-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .sig-row > * { border-bottom: 1px solid var(--border); }
+        .sig-row:first-child > * { border-top: 1px solid var(--border); }
+        .sig-row > *:first-child { border-left: 1px solid var(--border); }
+        .sig-row > *:not(:first-child) { border-left: 1px solid var(--border); }
+        .sig-row > *:last-child { border-right: 1px solid var(--border); }
+        .sig-heading {
+            color: var(--teal);
+            background-color: var(--gray-bg);
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            min-width: 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .sig-heading:last-child { position: relative; }
+        .sig-heading:last-child::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 0.5px;
+            background-color: var(--border);
+        }
+        .sig-cell { position: relative; height: 105px; min-width: 0; background-color: #ffffff; }
+        .sig-title { color: var(--teal); font-weight: bold; text-align: center; margin-top: 8px; }
+        .sig-line { border-bottom: 1px solid #555555; width: 90%; position: absolute; bottom: 28px; left: 5%; }
+        .sig-nombre { position: absolute; right: 5%; bottom: 7px; left: 5%; overflow-wrap: anywhere; font-size: 7pt; text-align: center; }
+
+        .assignment-date { text-align: right; margin-top: 15px; color: var(--teal); font-weight: bold; }
+        .assignment-date span { color: #333333; font-weight: normal; }
+
+        .page-two { position: relative; height: 220mm; }
+        .sello-estado {
+
+            position: absolute;
+            top: 60mm;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: rotate(-45deg);
+            font-family: Arial, sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .sello-texto { font-size: 90px; letter-spacing: 2px; align-items: center; justify-content: center; display: flex; }
+        .sello-estado.firmada { color: #1B5E20; }
+        .sello-estado.cerrada { color: #C62828; }
+
+    .espacio {
+    height: 13px; 
+    }
+
+    .espacio2 {
+    height: 2px; 
+    }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="doc-header">
+        <div style="width: 33%;" class="header-title-style"><b>MARQUARDT</b></div>
+        <div style="width: 34%; text-align: center;" class="header-center-style"><b>IT Asset Agreement</b></div>
+        <div style="width: 33%; text-align: center; line-height: 1.1;" class="header-right-style"><b>FO-ITS-005<br><span style="font-weight: normal;">Revision 04</span></b></div>
+    </div>
+     <div class="section-divider"></div>    
+
+    <div class="section-header">
+        <div class="section-badge badge-style">1</div>
+        <div class="section-ttile-style" style="font-weight: bold; letter-spacing: 2px;">Purpose</div>
+    </div>
+
+    <div class="espacio" ></div>
+
+    <p class="body-text-style">The goal of this document is to provide a proper tracking of IT assets assignation and gather responsibility from the final user. The subscriber confirms to have read and understood the rules listed below.</p>
+    <div class="espacio2" ></div>
+    <div class="section-header">
+        <div class="section-badge badge-style">2</div>
+        <div class="section-title-style" style="font-weight: bold; letter-spacing: 2px;">Rules</div>
+    </div>
+   <div class="espacio" ></div>
+    
+    <p class="body-text-style">This document will be filled-out electronically only, it must be electronic signed-on by the user of the specific resource/asset described in this document and by MQ IT Representative</p>
+    <div class="espacio2" ></div>
+    <table class="digital-record">
+        <tr>
+            <td class="dr-left" style="font-size: 8pt;">D I G I T A L R E C O R D</td>
+            <td class="dr-right body-text-style">
+                For tracking reasons this document will not be printed, only electronic copies of it will be stored.
+                <ul>
+                    <li>IT will sent a copy to user via email.</li>
+                    <li>A copy will be record under the Local IT Department Drive.</li>
+                    <li>Therefore, is suggested to have the parent ticket case in order to keep additional records, changes control, task delegation and administration only for specific requests.</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <div class="sub-heading subheading-style">2.1 Use regulation</div>
+     <div class="espacio" ></div>
+    <p class="body-text-style" style="margin-bottom: 4px;">The following regulation must be accomplished by subscriber:</p>
+     <div class="espacio2" ></div>
+
+    <div class="rule-block rule-text-style"><strong>2.1.1</strong> All IT Asset Equipment are property of Marquardt Mexico S. de R.L. de C.V and it may be re-assigned in accordance with the organization needs.</div>
+    <div class="rule-block rule-text-style"><strong>2.1.2</strong> User must report immediately to IT Department any type of failure or damage that prevents the equipment to work properly.</div>
+    <div class="rule-block rule-text-style"><strong>2.1.3</strong> It is totally prohibited to install any type of software without IT Department acknowledge or proper authorization. If needed, the subscriber must request it formally to OTRS/IT Support Portal in the proper way.</div>
+    <div class="rule-block rule-text-style"><strong>2.1.4</strong> The user is fully responsible to back his/her labor information up into the Department drive (designed for such task). For help or guidance, customer can contact IT Department. (Personal data is not allowed over Department drives).</div>
+    <div class="rule-block rule-text-style"><strong>2.1.5</strong> The customer is fully responsible for the assigned asset; therefore in case of failure or damage caused by inappropriate usage or negligence, the proper reparation could cause a sanction or fixed payment. Each case will be reviewed between IT, Finance and Human Resources departments in accordance to IT policies section 2.7.</div>
+    <div class="rule-block rule-text-style"><strong>2.1.6</strong> In case of Virus, Trojan, Malware, etc., IT Department should provide the proper help to contain or fix the problem. However, IT Department is not responsible for information loss or downtime related.</div>
+    <div class="rule-block rule-text-style"><strong>2.1.7</strong> In case of total loss of an IT asset, the customer must raise the proper notification at the local police department when applies and to the IT Department for immediate actions. For asset cost recovery determination, each case will be reviewed between IT, Finance and Human Resources departments, in accordance to IT policies section 2.6.</div>
+    <div class="rule-block rule-text-style"><strong>2.1.8</strong> The use of communication hardware must accomplish Marquardt Conduct Code, if the user do not respect this code will be reported to their manager and also to Human Resources department.</div>
+    <div class="rule-block rule-text-style">
+        <strong>2.1.9</strong> The assignation will end if one of the following occurs:<br>
+        &bull; Organizational changes to the area of responsibility<br>
+        &bull; Authorization withdrawn by area manager.<br>
+        &bull; Termination or break of employment.
+    </div>
+
+
+    <div style="page-break-before: always;"></div>
+
+    <!-- ================= PÁGINA 2 ================= -->
+    <div class="page-two">
+    <div class="doc-header">
+        <div style="width: 33%;" class="header-title-style"><b>MARQUARDT</b></div>
+        <div style="width: 34%; text-align: center;" class="header-center-style"><b>IT Asset Agreement</b></div>
+        <div style="width: 33%; text-align: center; line-height: 1.1;" class="header-right-style"><b>FO-ITS-005<br><span style="font-weight: normal;">Revision 04</span></b></div>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-header">
+        <div class="section-badge badge-style">3</div>
+        <div class="section-title-style" style="font-weight: bold; letter-spacing: 2px;">STATEMENT OF DELIVERY</div>
+    </div>
+    <div class="espacio" ></div>
+
+
+    <div class="sub-heading subheading-style">3.1 End user Information</div>
+    <p class="body-text-style">IT department on behalf of Marquardt Mexico S. de R.L. de C.V gives in functional conditions and for not determined time to:</p>
+     <div class="espacio2" ></div>
+
+  
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="th-text-style">Full Name</th>
+                <th class="th-text-style">Employee Number</th>
+                <th class="th-text-style">Position</th>
+                <th class="th-text-style">Department</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="texto_datos">{{ full_name or '' }}</td>
+                <td class="texto_datos">{{ employee_number or '' }}</td>
+                <td class="texto_datos">{{ position or '' }}</td>
+                <td class="texto_datos">{{ department or '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading subheading-style">3.2 Asset Data</div>
+     <div class="espacio" ></div>
+    
+    <!-- TABLA JINJA 2 -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th class="th-text-style">Brand / Model</th>
+                <th class="th-text-style">Hardware description</th>
+                <th class="th-text-style">Accessories / Peripherals</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="texto_datos">{{ brand_model or '' }}</td>
+                <td class="texto_datos" style="white-space: pre-line;">{{ hardware_description or '' }}</td>
+                <td class="texto_datos accessories-cell">{{ accessories or '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="sub-heading subheading-style">3.3 Notes</div>
+    <div class="notes-box texto_datos">{{ notes or '' }}</div>
+    <div class="espacio2" ></div>
+
+    <div class="section-header">
+        <div class="section-badge badge-style">4</div>
+        <div class="section-title-style" style="font-weight: bold; letter-spacing: 2px;">CONFIRMATION</div>
+    </div>
+    <div class="espacio" ></div>
+    <p class="body-text-style">The subscriber declares that the above-referenced asset has been delivered and received in good conditions, understands and agrees all the rules and violation consequences. The subscriber will carefully handle and safekeeping the received equipment.</p>
+    <div class="espacio2" ></div>
+    <div class="sig-table" role="table" aria-label="Signature approvals">
+        <div class="sig-row" role="row">
+            <div class="sig-heading th-text-style" role="columnheader">Employee(s):</div>
+            <div class="sig-heading th-text-style" role="columnheader">Area Manager:</div>
+            <div class="sig-heading th-text-style" role="columnheader">IT Department Representative:</div>
+        </div>
+        <div class="sig-row" role="row">
+            <div class="sig-cell" role="cell">
+                <div class="sig-line"></div>
+                <div class="sig-nombre">{{ firmas.get('empleado', '') }}</div>
+            </div>
+            <div class="sig-cell" role="cell">
+                <div class="sig-line"></div>
+                <div class="sig-nombre">{{ firmas.get('manager', '') }}</div>
+            </div>
+            <div class="sig-cell" role="cell">
+                <div class="sig-line"></div>
+                <div class="sig-nombre">{{ firmas.get('administrador', '') }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="assignment-date body-text-style">
+        Date of assignment: <span class="texto_datos">{{ assignment_date or 'Not recorded' }}</span>
+    </div>
+
+    {% if estado_carta == 'FIRMADA' %}
+    <div class="sello-estado firmada" aria-label="Carta firmada">
+        <div class="sello-texto">Firmada</div>
+    </div>
+    {% elif estado_carta == 'CERRADA' %}
+    <div class="sello-estado cerrada" aria-label="Carta cerrada">
+
+        <div class="sello-texto">Cancelada</div>
+    </div>
+    {% endif %}
+    </div>
+
+</body>
+</html>

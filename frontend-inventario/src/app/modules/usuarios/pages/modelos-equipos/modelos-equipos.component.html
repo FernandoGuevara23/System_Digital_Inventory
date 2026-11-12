@@ -1,0 +1,124 @@
+<section class="modelos-page">
+  <header class="page-header">
+    <div class="page-heading">
+      <h1>Modelos</h1>
+    </div>
+    <div class="summary-card" *ngIf="!cargando && datosDashboard">
+      <span class="summary-icon" aria-hidden="true">▦</span>
+      <span class="summary-copy">
+        <small>Equipos registrados</small>
+        <strong>{{ totalModelos('latitude') + totalModelos('optiplex') + totalModelos('precision') }}</strong>
+      </span>
+      <span class="summary-divider" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <div *ngIf="cargando" class="state-card">
+    <span class="spinner" aria-hidden="true"></span>
+    Cargando resumen...
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!cargando && datosDashboard" class="grid">
+    <article class="panel" *ngFor="let categoria of categorias" [attr.data-category]="categoria.key">
+      <div class="panel-header">
+        <div class="category-title">
+          <span class="category-mark" aria-hidden="true">{{ categoria.titulo.charAt(0) }}</span>
+          <span>
+            <h2>{{ categoria.titulo }}</h2>
+          </span>
+        </div>
+        <span class="category-total">
+          <strong>{{ totalModelos(categoria.key) }}</strong>
+          <small>equipos</small>
+        </span>
+      </div>
+
+      <div class="hostname-box">
+        <div class="hostname-item">
+          <span class="hostname-icon" aria-hidden="true">↙</span>
+          <span>Último registrado</span>
+          <strong>{{ getHostname(categoria.key).ultimo }}</strong>
+        </div>
+        <div class="hostname-item next">
+          <span class="hostname-icon" aria-hidden="true">↗</span>
+          <span>Siguiente hostname</span>
+          <strong>{{ getHostname(categoria.key).siguiente }}</strong>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="models-table">
+          <thead>
+            <tr class="model-row">
+              <th>Modelo</th>
+              <th class="cantidad">Equipos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let modelo of getModelos(categoria.key)">
+              <tr>
+                <td>
+                  <button
+                    type="button"
+                    class="model-toggle"
+                    [attr.aria-expanded]="modeloExpandido === modelo.Model"
+                    (click)="alternarModelo(modelo.Model)"
+                  >
+                    <span class="expand-mark" aria-hidden="true">{{ modeloExpandido === modelo.Model ? '−' : '+' }}</span>
+                    <span class="model-name">{{ modelo.Model }}</span>
+                    
+                  </button>
+                </td>
+                <td class="cantidad"><span class="model-count">{{ modelo.Cantidad }}</span></td>
+              </tr>
+              <tr *ngIf="modeloExpandido === modelo.Model">
+                <td colspan="2" class="model-detail-cell">
+                  <p *ngIf="modelosCargando.has(modelo.Model)" class="model-detail-state">
+                    <span class="spinner small" aria-hidden="true"></span>
+                    Cargando equipos…
+                  </p>
+                  <p *ngIf="erroresPorModelo[modelo.Model]" class="model-detail-state error" role="alert">
+                    {{ erroresPorModelo[modelo.Model] }}
+                    <button type="button" (click)="reintentarModelo(modelo.Model)">Reintentar</button>
+                  </p>
+                  <div class="table-wrap" *ngIf="!modelosCargando.has(modelo.Model) && !erroresPorModelo[modelo.Model]">
+                    <div class="expanded-heading">
+                      <strong>Equipos de {{ modelo.Model }}</strong>
+                      <span>{{ equiposPorModelo[modelo.Model]?.length ?? 0 }} registros</span>
+                    </div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Tipo de equipo</th>
+                          <th>Hostname</th>
+                          <th>Service Tag</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let equipo of equiposPorModelo[modelo.Model]">
+                          <td>{{ equipo.Tipo_Equipo }}</td>
+                          <td>{{ equipo.Hostname || 'Sin hostname' }}</td>
+                          <td>{{ equipo.Service_Tag }}</td>
+                        </tr>
+                        <tr *ngIf="equiposPorModelo[modelo.Model]?.length === 0">
+                          <td colspan="3" class="empty">No hay equipos para este modelo.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="getModelos(categoria.key).length === 0">
+              <td colspan="2" class="empty">Sin registros</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+</section>

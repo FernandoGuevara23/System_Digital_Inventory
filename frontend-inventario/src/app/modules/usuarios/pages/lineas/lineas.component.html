@@ -1,0 +1,437 @@
+<main class="lineas-page">
+  <header class="page-header">
+    <div class="page-heading">
+      <h1>Líneas telefónicas</h1>
+    </div>
+    <div class="header-actions">
+      <button class="button button-secondary" type="button" (click)="descargarExcel()">Exportar Excel</button>
+      <button class="button button-secondary" type="button" (click)="abrirSelectorExcel()" [disabled]="cargandoExcel">
+        {{ cargandoExcel ? 'Cargando Excel...' : 'Cargar Excel' }}
+      </button>
+      <button class="button button-secondary" type="button"  (click)="descargarReporteLineas()">
+        {{  'Reporte de líneas' }}
+      </button>
+      <button class="button button-secondary" type="button" (click)="abrirCambioLinea()">Cambio de línea</button>
+      <button class="button button-secondary" type="button" [disabled]="generandoReporte" (click)="reporteLineasPorCC()">
+        {{'Reporte por CC' }}
+      </button>
+      <button class="button button-secondary" type="button" [disabled]="generandoReporte" (click)="reporteLineasPorCC_HC()">
+        {{ 'Cálculo de línea' }}
+      </button>
+      <button class="button button-primary" type="button" (click)="abrirCrear()">
+        <ng-icon name="phosphorPhoneCallBold" size="1.2em" aria-hidden="true"></ng-icon>
+        <span>Nueva línea</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="stats-row" aria-label="Resumen de líneas">
+    <span>Total de líneas</span>
+    <strong>{{ ObtenerTotalLineas() }}</strong>
+  </section>
+
+  @if (mensaje) {
+    <app-alert [type]="tipoMensaje" title="Operación completada" [message]="mensaje" (dismissed)="mensaje = ''" />
+  }
+  @if (error) {
+    <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" />
+  }
+
+  @if (resultadoImportacion; as resultado) {
+    <div class="modal-backdrop" role="presentation" (click)="cerrarResultadoImportacion()">
+      <section class="modal import-result-modal" role="dialog" aria-modal="true" aria-labelledby="import-result-title" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <p class="section-kicker">Actualización de líneas</p>
+            <h2 id="import-result-title">Resultado de la carga</h2>
+          </div>
+          <button class="close-button" type="button" aria-label="Cerrar resultado" (click)="cerrarResultadoImportacion()">×</button>
+        </div>
+        <div class="import-result-summary">
+          <strong>{{ resultado.procesadas }}</strong>
+          <span>líneas actualizadas</span>
+        </div>
+        @if (resultado.no_encontradas.length > 0) {
+          <section class="import-result-section">
+            <h3>Cuentas que no están en el sistema <span>{{ resultado.no_encontradas.length }}</span></h3>
+            <div class="import-result-list">
+              @for (fila of resultado.no_encontradas; track fila.fila + '-' + fila.account) {
+                <article>
+                  <small>Fila {{ fila.fila }}</small>
+                  <strong>{{ fila.account || 'Sin Cuenta padre' }}</strong>
+                  <span>{{ fila.telefono || 'Sin teléfono' }}</span>
+                </article>
+              }
+            </div>
+          </section>
+        }
+        @if (resultado.errores.length > 0) {
+          <section class="import-result-section import-result-errors">
+            <h3>Filas con errores <span>{{ resultado.errores.length }}</span></h3>
+            <ul>
+              @for (detalle of resultado.errores; track $index) {
+                <li>{{ detalle }}</li>
+              }
+            </ul>
+          </section>
+        }
+        <div class="modal-actions">
+          <button class="button button-primary" type="button" (click)="cerrarResultadoImportacion()">Entendido</button>
+        </div>
+      </section>
+    </div>
+  }
+
+  <div class="toolbar">
+    <label class="line-search">
+      <input class="search-input" type="search" [formControl]="busquedaControl" placeholder="Número, Service Tag, cuenta o empleado..." aria-label="Buscar líneas por número, Service Tag, cuenta o empleado" />
+    </label>
+    <nav class="filters" aria-label="Filtrar líneas">
+      <button type="button" [class.active]="estadoFiltro === 'Todas'" (click)="estadoFiltro = 'Todas'">Todas ({{ lineas.length }})</button>
+      <button type="button" [class.active]="estadoFiltro === 'Activa'" (click)="estadoFiltro = 'Activa'">Activas ({{ lineas.filter(linea => linea.Estado === 'Activa').length }})</button>
+      <button type="button" [class.active]="estadoFiltro === 'Suspendida'" (click)="estadoFiltro = 'Suspendida'">Suspendidas ({{ lineas.filter(linea => linea.Estado === 'Suspendida').length }})</button>
+      <button type="button" [class.active]="estadoFiltro === 'Sin equipo'" (click)="estadoFiltro = 'Sin equipo'">Sin equipo ({{ lineas.filter(linea => linea.Estado === 'Sin equipo').length }})</button>
+    </nav>
+  </div>
+
+  @if (cargando) {
+    <p class="empty-state">Cargando líneas...</p>
+  } @else if (lineas.length === 0) {
+    <p class="empty-state">Aún no hay líneas registradas.</p>
+  } @else if (lineasFiltradas().length === 0) {
+    <p class="empty-state">No se encontraron líneas con estos filtros.</p>
+  } @else {
+    <p class="record-count">{{ lineasFiltradas().length }} registros</p>
+    <section class="cards-grid" aria-label="Lista de líneas telefónicas">
+      @for (linea of lineasFiltradas(); track linea.Service_Tag) {
+        <button type="button" class="line-card" (click)="abrirLinea(linea)">
+          <div class="line-card-top">
+            <span class="line-icon">☎</span>
+            <div class="line-card-title">
+              <h2>{{ linea.Numero_Telefono || 'Sin número' }}</h2>
+              <p>{{ linea.Service_Tag }}</p>
+            </div>
+            <span class="status" [class.status-suspended]="linea.Estado === 'Suspendida'">{{ linea.Estado }}</span>
+          </div>
+          <div class="line-card-info">
+            <span><small>Empleado</small><strong>{{ linea.Usuario || 'Sin usuario asignado' }}</strong></span>
+            <span><small>Cuenta</small><strong>{{ linea.Account || 'Sin cuenta' }}</strong></span>
+            <span><small>Centro de costo</small><strong>{{ linea.CC ?? 'Sin CC' }}</strong></span>
+          </div>
+          <div class="line-card-bottom">
+            <span>{{ linea.Payroll || 'Sin Payroll' }}</span>
+            <strong>{{ linea.Total_cuenta === null ? 'Sin importe' : (linea.Total_cuenta | currency:'MXN':'symbol':'1.0-2') }}</strong>
+          </div>
+        </button>
+      }
+    </section>
+  }
+</main>
+
+@if (lineaSeleccionada; as linea) {
+  <aside class="line-panel" aria-label="Detalle de línea">
+    <header class="panel-header">
+      <button type="button" class="panel-close" aria-label="Cerrar detalle" (click)="cerrarLinea()">×</button>
+      <div class="detail-heading">
+        <span class="line-icon panel-icon">☎</span>
+        <div>
+          <small>{{ linea.Service_Tag }}</small>
+          <h2>{{ linea.Numero_Telefono || 'Sin número' }}</h2>
+          <span class="status" [class.status-suspended]="linea.Estado === 'Suspendida'">{{ linea.Estado }}</span>
+        </div>
+      </div>
+    </header>
+    <div class="panel-body">
+      @if (!linea.Equipo_En_Inventario) {
+        <div class="notice notice-error" role="alert">
+          {{ avisoEquipoFueraInventario }}
+        </div>
+      }
+      <nav class="detail-tabs" aria-label="Secciones de la línea">
+        <button type="button" [class.active]="pestanaLinea === 'detalle'" (click)="pestanaLinea = 'detalle'">Detalles</button>
+        <button type="button" [class.active]="pestanaLinea === 'trace'" (click)="pestanaLinea = 'trace'">Trace</button>
+      </nav>
+      @if (pestanaLinea === 'detalle') {
+        @if (editandoEnSlide) {
+          <form class="slide-edit-form" [formGroup]="lineaForm" (ngSubmit)="guardar()">
+            <div class="locked-fields">
+              <div><small>Service Tag</small><strong>{{ linea.Service_Tag }}</strong></div>
+              <div><small>Payroll</small><strong>{{ linea.Payroll || '—' }}</strong></div>
+            </div>
+            <label class="field"><span>Número telefónico</span><input type="tel" maxlength="20" formControlName="Numero_Telefono" /></label>
+            <label class="field"><span>Account</span><input type="text" formControlName="Account" /></label>
+            <label class="field">
+              <span>Total de cuenta</span>
+              <input type="number" min="0" max="9999999999.99" step="0.01" inputmode="decimal" formControlName="Total_cuenta" />
+              @if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('required')) {
+                <small role="alert">El total de cuenta es obligatorio.</small>
+              } @else if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('min')) {
+                <small role="alert">El total no puede ser negativo.</small>
+              } @else if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('max')) {
+                <small role="alert">El total no puede exceder $9,999,999,999.99.</small>
+              } @else if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('pattern')) {
+                <small role="alert">El total sólo puede tener hasta dos decimales.</small>
+              }
+            </label>
+            <label class="field"><span>Estado</span><select formControlName="Estado"><option value="Activa">Activa</option><option value="Suspendida">Suspendida</option></select></label>
+            
+            <div class="panel-actions">
+              <button type="button" class="btn-secondary" (click)="cancelarEdicionEnSlide()">Cancelar</button>
+              <button type="submit" class="btn-primary" [disabled]="guardando || !linea.Equipo_En_Inventario">{{ guardando ? 'Guardando...' : 'Guardar cambios' }}</button>
+            </div>
+          </form>
+        } @else {
+          <div class="detail-grid">
+            <div><small>Service Tag</small><strong>{{ linea.Service_Tag }}</strong></div>
+            <div><small>Payroll</small><strong>{{ linea.Payroll || '—' }}</strong></div>
+            <div><small>CC</small><strong>{{ linea.CC ?? '—' }}</strong></div>
+            <div><small>Número telefónico</small><strong>{{ linea.Numero_Telefono || '—' }}</strong></div>
+            <div><small>Account</small><strong>{{ linea.Account || '—' }}</strong></div>
+            <div><small>Total de cuenta</small><strong>{{ linea.Total_cuenta === null ? '—' : (linea.Total_cuenta | currency:'MXN':'symbol':'1.0-2') }}</strong></div>
+            <div><small>Estado</small><strong>{{ linea.Estado }}</strong></div>
+          </div>
+        }
+        @if (!editandoEnSlide) {
+        <button type="button" class="employee-card" [disabled]="linea.Payroll === null || linea.Payroll === undefined" (click)="abrirEmpleadoDesdeLinea(linea)">
+          <span class="employee-avatar">{{ linea.Usuario?.slice(0, 2)?.toUpperCase() || '—' }}</span>
+          <span>
+            <small>Asignado a</small>
+            <strong>{{ linea.Usuario || 'Sin empleado asignado' }}</strong>
+            <small>{{ linea.Payroll ? 'Payroll: ' + linea.Payroll + ' · Ver perfil del empleado' : 'Línea disponible' }}</small>
+          </span>
+        </button>
+        <div class="panel-actions">
+          <button type="button" class="btn-secondary" [disabled]="!linea.Equipo_En_Inventario" (click)="abrirAsignacion()">Asignar línea</button>
+          <button type="button" class="btn-primary" (click)="abrirEditar(linea)">Editar línea</button>
+        </div>
+        }
+
+        @if (mostrarAsignacion && lineaSeleccionada; as linea) {
+          <div class="modal-backdrop" role="presentation" (click)="cerrarAsignacion()">
+            <section class="modal assign-modal" role="dialog" aria-modal="true" aria-labelledby="assign-line-title" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <div>
+                  <p class="section-kicker">Asignación de telefonía</p>
+                  <h2 id="assign-line-title">Asignar línea</h2>
+                </div>
+                <button class="close-button" type="button" aria-label="Cerrar asignación" (click)="cerrarAsignacion()">×</button>
+              </div>
+              <div class="selected-transfer"><strong>{{ linea.Service_Tag }}</strong> · {{ linea.Numero_Telefono || 'Sin número' }}<span>Empleado actual: {{ linea.Usuario || 'Sin empleado asignado' }}</span></div>
+              <label class="field" for="buscar-empleado-linea">
+                <span>Buscar empleado</span>
+                <input id="buscar-empleado-linea" type="search" [(ngModel)]="busquedaEmpleado" placeholder="Payroll, nombre, área o departamento..." autocomplete="off" />
+              </label>
+              @if (empleadosParaAsignar().length === 0) {
+                <p class="empty-state">No se encontraron empleados activos.</p>
+              } @else {
+                <div class="employee-results" aria-label="Empleados activos">
+                  @for (empleado of empleadosParaAsignar(); track empleado.Payroll) {
+                    <button type="button" class="employee-result" [class.selected]="empleadoSeleccionado === empleado.Payroll" (click)="seleccionarEmpleado(empleado.Payroll)">
+                      <strong>{{ empleado.Full_Name }}</strong>
+                      <span>Payroll {{ empleado.Payroll }} · {{ empleado.Departament || 'Sin departamento' }}</span>
+                    </button>
+                  }
+                </div>
+              }
+              <div class="modal-actions">
+                <button type="button" class="button button-secondary" (click)="cerrarAsignacion()">Cancelar</button>
+                <button type="button" class="button button-primary" [disabled]="asignando || empleadoSeleccionado === null || empleadoSeleccionado === linea.Payroll" (click)="asignarLinea()">
+                  {{ asignando ? 'Asignando...' : 'Confirmar asignación' }}
+                </button>
+              </div>
+            </section>
+          </div>
+        }
+      } @else {
+        @if (cargandoTrace) {
+          <div class="trace-empty"><p>Cargando trace...</p></div>
+        } @else if (historialLinea.length === 0) {
+          <div class="trace-empty"><span class="trace-icon">↔</span><h3>Trace de la línea</h3><p>No hay movimientos registrados para esta línea.</p></div>
+        } @else {
+          <div class="trace-list">
+            @for (movimiento of historialLinea; track movimiento.Id) {
+              <article class="trace-item">
+                <strong>{{ movimiento.Accion }}</strong>
+                <small>{{ movimiento.Fecha | date:'dd/MM/yyyy' }}</small>
+                <p>{{ movimiento.Detalle }}</p>
+              </article>
+            }
+          </div>
+        }
+      }
+    </div>
+  </aside>
+}
+
+@if (mostrarFormulario) {
+  <div class="modal-backdrop" role="presentation" (click)="cerrarFormulario()">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="form-title" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <p class="section-kicker">{{ editando ? 'Actualizar registro' : 'Nuevo registro' }}</p>
+          <h2 id="form-title">{{ editando ? 'Modificar línea' : 'Registrar línea' }}</h2>
+        </div>
+        <button class="close-button" type="button" aria-label="Cerrar formulario" (click)="cerrarFormulario()">×</button>
+      </div>
+
+      <form [formGroup]="lineaForm" (ngSubmit)="guardar()">
+        <label class="field" for="service-tag">
+          <span>Service Tag <b>*</b></span>
+          @if (!editando || !editando.Equipo_En_Inventario) {
+            <div class="search-line">
+              <input id="service-tag" type="search" [(ngModel)]="busquedaServiceTag" [ngModelOptions]="{standalone: true}" (input)="actualizarBusquedaEquiposTelefono()" (keydown.enter)="$event.preventDefault()" placeholder="Buscar Service Tag, empleado o CC" autocomplete="off" />
+            </div>
+            @if (errorBusquedaEquipos) {
+              <small role="alert">{{ errorBusquedaEquipos }}</small>
+            }
+            @if (buscandoEquipos) {
+              <small>Cargando lista de equipos telefónicos...</small>
+            }
+            @if (equiposTelefono.length > 0) {
+              <div class="equipment-results" role="listbox" aria-label="Equipos telefónicos encontrados">
+                @for (equipo of equiposTelefono; track equipo.Service_Tag) {
+                  <button class="equipment-result" type="button" role="option" [disabled]="!equipo.Puede_Registrar_Linea || (!!editando && equipo.Tiene_Datos_Linea)" (click)="seleccionarEquipoTelefono(equipo)">
+                    <strong>{{ equipo.Service_Tag }}</strong>
+                    <span>{{ equipo.Marca }} {{ equipo.Modelo }} · {{ equipo.Tipo_Equipo }}</span>
+                    <span class="equipment-user">Usuario: {{ equipo.Usuario || 'Sin usuario asignado' }}{{ equipo.Payroll ? ' · Payroll ' + equipo.Payroll : '' }} · CC {{ equipo.CC ?? 'Sin CC' }}</span>
+                    @if (!equipo.Puede_Registrar_Linea) {
+                      <small class="has-line">{{ equipo.Motivo_No_Registrable }}</small>
+                    } @else if (editando && equipo.Tiene_Datos_Linea) {
+                      <small class="has-line">Tiene datos telefónicos parciales y no puede ser destino</small>
+                    }
+                  </button>
+                }
+              </div>
+            } @else if (!buscandoEquipos && !errorBusquedaEquipos && busquedaServiceTag.trim().length >= 2 && !lineaForm.controls.Service_Tag.value) {
+              <small>No hay equipos que coincidan con la búsqueda.</small>
+            } @else if (!buscandoEquipos && !errorBusquedaEquipos && busquedaServiceTag.trim().length < 2) {
+              <small>Escribe al menos 2 caracteres para ver equipos disponibles.</small>
+            }
+          } @else {
+            <input id="service-tag" type="text" formControlName="Service_Tag" [readonly]="editando?.Estado !== 'Sin equipo'" />
+          }
+          @if (lineaForm.controls.Service_Tag.touched && lineaForm.controls.Service_Tag.invalid) {
+            <small>Indica el Service Tag del equipo existente.</small>
+          }
+          @if (!editando && lineaForm.controls.Service_Tag.value) {
+          
+          }
+        </label>
+        <label class="field" for="numero-telefono">
+          <span>Número telefónico <b>*</b></span>
+          <input id="numero-telefono" type="tel" formControlName="Numero_Telefono" maxlength="20"  />
+        </label>
+        <label class="field" for="account">
+          <span>Account <b>*</b></span>
+          <input id="account" type="text" formControlName="Account"  />
+        </label>
+        <label class="field" for="total-cuenta">
+          <span>Total de cuenta <b>*</b></span>
+          <input id="total-cuenta" type="number" min="0" max="9999999999.99" step="0.01" inputmode="decimal" formControlName="Total_cuenta" placeholder="0.00" />
+          @if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('required')) {
+            <small role="alert">El total de cuenta es obligatorio.</small>
+          } @else if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('min')) {
+            <small role="alert">El total no puede ser negativo.</small>
+          } @else if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('max')) {
+            <small role="alert">El total no puede exceder $9,999,999,999.99.</small>
+          } @else if (lineaForm.controls.Total_cuenta.touched && lineaForm.controls.Total_cuenta.hasError('pattern')) {
+            <small role="alert">El total sólo puede tener hasta dos decimales.</small>
+          }
+        </label>
+        @if (editando) {
+          <label class="field" for="estado-linea">
+            <span>Estado de la línea <b>*</b></span>
+            <select id="estado-linea" formControlName="Estado">
+              <option value="Activa">Activa</option>
+              <option value="Suspendida">Suspendida</option>
+            </select>
+          </label>
+        }
+        <div class="modal-actions">
+          <button class="button button-secondary" type="button" (click)="cerrarFormulario()">Cancelar</button>
+          <button class="button button-primary" type="submit" [disabled]="guardando">
+            {{ guardando ? 'Guardando...' : (editando ? 'Guardar cambios' : 'Registrar línea') }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (mostrarCambio) {
+  <div class="modal-backdrop" role="presentation" (click)="cerrarCambioLinea()">
+    <section class="modal transfer-modal" role="dialog" aria-modal="true" aria-labelledby="transfer-title" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2 id="transfer-title">Cambio de línea</h2>
+        </div>
+        <button class="close-button" type="button" aria-label="Cerrar cambio de línea" (click)="cerrarCambioLinea()">×</button>
+      </div>
+      <label class="field" for="linea-origen">
+        <span>Línea origen</span>
+        <input id="linea-origen" type="search" [(ngModel)]="terminoOrigen" (input)="actualizarBusquedaCambio()" placeholder="Service Tag, número, cuenta o usuario" autocomplete="off" />
+        @if (errorBusquedaOrigen) {
+          <small role="alert">{{ errorBusquedaOrigen }}</small>
+        }
+        @if (lineasOrigen.length > 0) {
+          <div class="equipment-results">
+            @for (linea of lineasOrigen; track linea.Service_Tag) {
+              <button class="equipment-result transfer-result" type="button" (click)="seleccionarLineaOrigen(linea)">
+                <strong>{{ linea.Service_Tag }}</strong>
+                <span>{{ linea.Numero_Telefono }} · {{ linea.Account }}</span>
+                <span class="equipment-user">{{ linea.Usuario || 'Sin usuario' }}</span>
+              </button>
+            }
+          </div>
+        } @else if (terminoOrigen.trim().length >= 2) {
+          <small>No hay líneas que coincidan con la búsqueda.</small>
+        } @else {
+          <small>Escribe al menos 2 caracteres para ver líneas.</small>
+        }
+      </label>
+      @if (lineaOrigen) {
+        <div class="selected-transfer">Origen: <strong>{{ lineaOrigen.Service_Tag }}</strong> · {{ lineaOrigen.Usuario || 'Sin usuario asignado' }} · CC {{ lineaOrigen.CC ?? 'Sin CC' }}</div>
+      }
+      <label class="field" for="equipo-destino">
+        <span>Equipo destino</span>
+        <input id="equipo-destino" type="search" [(ngModel)]="terminoDestino" (input)="actualizarBusquedaDestino()" placeholder="Buscar equipo por Service Tag, usuario o CC" autocomplete="off" />
+        @if (buscandoEquipos) {
+          <small>Cargando lista de equipos telefónicos...</small>
+        } @else if (errorBusquedaEquipos) {
+          <small role="alert">{{ errorBusquedaEquipos }}</small>
+        }
+        @if (equiposDestino.length > 0) {
+          <div class="equipment-results" role="listbox" aria-label="Equipos telefónicos encontrados">
+            @for (equipo of equiposDestino; track equipo.Service_Tag) {
+              <button class="equipment-result transfer-result" type="button" role="option" [disabled]="!equipo.Puede_Registrar_Linea || equipo.Tiene_Datos_Linea || equipo.Service_Tag === lineaOrigen?.Service_Tag" (click)="seleccionarEquipoDestino(equipo)">
+                <strong>{{ equipo.Service_Tag }}</strong>
+                <span>{{ equipo.Marca }} {{ equipo.Modelo }} · {{ equipo.Tipo_Equipo }}</span>
+                <span class="equipment-user">Usuario: {{ equipo.Usuario || 'Sin usuario asignado' }}{{ equipo.Payroll ? ' · Payroll ' + equipo.Payroll : '' }} · CC {{ equipo.CC ?? 'Sin CC' }}</span>
+                @if (!equipo.Puede_Registrar_Linea) {
+                  <small class="has-line">{{ equipo.Motivo_No_Registrable }}</small>
+                } @else if (equipo.Tiene_Datos_Linea) {
+                  <small class="has-line">Tiene datos telefónicos y no puede ser destino</small>
+                } @else if (equipo.Service_Tag === lineaOrigen?.Service_Tag) {
+                  <small class="has-line">El equipo origen no puede ser destino</small>
+                }
+              </button>
+            }
+          </div>
+        } @else if (!buscandoEquipos && !errorBusquedaEquipos && terminoDestino.trim().length >= 2) {
+          <small>No hay equipos que coincidan con la búsqueda.</small>
+        } @else if (!buscandoEquipos && !errorBusquedaEquipos) {
+          <small>Escribe al menos 2 caracteres para ver equipos telefónicos.</small>
+        }
+      </label>
+      @if (equipoDestino) {
+        <div class="selected-transfer">Destino: <strong>{{ equipoDestino.Service_Tag }}</strong> · {{ equipoDestino.Usuario || 'Sin usuario asignado' }} · CC {{ equipoDestino.CC ?? 'Sin CC' }}</div>
+      }
+      <div class="modal-actions">
+        <button class="button button-secondary" type="button" (click)="cerrarCambioLinea()">Cancelar</button>
+        <button class="button button-primary" type="button" [disabled]="!lineaOrigen || !equipoDestino || equipoDestino.Tiene_Datos_Linea || buscandoCambio || buscandoEquipos" (click)="cambiarLinea()">
+          {{ buscandoCambio ? 'Transfiriendo información...' : 'Transferir información' }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

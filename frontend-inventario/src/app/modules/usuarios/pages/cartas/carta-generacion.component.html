@@ -1,0 +1,185 @@
+<div class="modal-backdrop" (click)="!enviando && cancelado.emit()">
+  <section class="carta-modal" [class.shared]="tipo === 'COMPARTIDA'" role="dialog" aria-modal="true" aria-labelledby="carta-modal-title" (click)="$event.stopPropagation()">
+    <header class="modal-header">
+      <div>
+        <h2 id="carta-modal-title">{{ tipo === 'COMPARTIDA' ? 'Carta compartida' : 'Carta responsiva individual' }}</h2>
+        <p class="modal-subtitle">{{ tipo === 'COMPARTIDA' ? '' : '' }}</p>
+      </div>
+      <button type="button" class="modal-close" aria-label="Cerrar" [disabled]="enviando" (click)="cancelado.emit()">×</button>
+    </header>
+
+    @if (cartaCreada; as carta) {
+      <div class="modal-body">
+        @if (carta.estado === 'ENVIADO') {
+          <p class="success-message">La carta {{ carta.id }} se envió por correo correctamente.</p>
+        } @else {
+          <p class="success-message">La carta {{ carta.id }} se generó y está lista para enviar.</p>
+          <p class="success-detail">Revisa el PDF y, si todo está correcto, envíala directamente desde aquí.</p>
+        }
+        @if (error) {
+          <p class="error-message" role="alert">{{ error }}</p>
+        }
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn-secondary" [disabled]="enviando" (click)="verPdf()">
+          <ng-icon name="fluentDocumentPdf" size="1.2em" aria-hidden="true"></ng-icon>
+          <span>Ver PDF</span>
+        </button>
+        @if (carta.estado === 'SIN_ENVIAR') {
+          <button type="button" class="btn-primary" [disabled]="enviando" (click)="enviarCarta()">
+            @if (enviando) {
+              <ng-icon name="matMarkEmailReadFillOutline" size="1.2em" aria-hidden="true"></ng-icon>
+              <span>Enviando...</span>
+            } @else {
+              <ng-icon name="simpleMinutemailer" size="1.2em" aria-hidden="true"></ng-icon>
+              <span>Enviar carta</span>
+            }
+          </button>
+        }
+      </footer>
+    } @else {
+      <div class="modal-body">
+        @if (titularActual && !titularActual.Correo) {
+          <p class="error-message" role="status">El titular no tiene correo registrado; la carta se podrá generar, pero no enviar hasta completar ese dato.</p>
+        }
+        <div class="panel-block">
+          <div class="section-heading">
+            <div>
+              <h3>Equipo</h3>
+              <p>{{ equipoContexto ? '' : 'Selecciona el equipo que se incluirá en la carta.' }}</p>
+            </div>
+          </div>
+          @if (equipoContexto) {
+            <div class="equipment-option selected">
+              <strong>{{ equipoContexto.Marca }} {{ equipoContexto.Modelo }}</strong>
+              <small>{{ equipoContexto.Service_Tag }} · {{ equipoContexto.Tipo_Equipo }}</small>
+            </div>
+          } @else if (cargandoEstados) {
+            <div class="picker-message" role="status">Revisando cartas existentes...</div>
+          } @else if (errorCargaEstados) {
+            <div class="picker-message error-message" role="alert">No se pudo comprobar el estado de las cartas.</div>
+          } @else if (!equipos.length) {
+            <div class="picker-message">No hay equipos disponibles para crear una carta.</div>
+          } @else {
+            <div class="equipment-picker">
+              @for (equipo of equipos; track equipo.Service_Tag) {
+                <button
+                  type="button"
+                  class="equipment-option"
+                  [class.selected]="equipoSeleccionado?.Service_Tag === equipo.Service_Tag"
+                  [attr.aria-pressed]="equipoSeleccionado?.Service_Tag === equipo.Service_Tag"
+                  (click)="equipoSeleccionado = equipo"
+                >
+                  <strong>{{ equipo.Marca }} {{ equipo.Modelo }}</strong>
+                  <small>{{ equipo.Service_Tag }} · {{ equipo.Tipo_Equipo }}</small>
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        @if (equipoContexto) {
+          <div class="panel-block">
+            <div class="section-heading">
+              <div>
+                <h3>Titular responsable</h3>
+              
+              </div>
+            </div>
+            @if (cargandoEmpleados) {
+              <div class="picker-message" role="status">Buscando al empleado asignado...</div>
+            } @else if (titularActual) {
+              <div class="selected-person">
+                <span>{{ titularActual.Full_Name }} ({{ titularActual.Payroll }}) · {{ titularActual.Correo || 'Sin correo registrado' }}</span>
+              </div>
+              
+            } @else {
+              <p class="picker-message error-message" role="alert">{{ error }}</p>
+            }
+          </div>
+        }
+
+        @if (tipo === 'COMPARTIDA') {
+          <div class="panel-block">
+            <div class="section-heading">
+              <div>
+                <h3>Personas adicionales</h3>
+                <p></p>
+              </div>
+              <span class="people-count">{{ seleccionados.length }} seleccionadas</span>
+            </div>
+            @if (cargandoEmpleados) {
+              <div class="picker-message" role="status">Cargando empleados...</div>
+            } @else {
+              <input
+                id="empleado-compartido-search"
+                type="search"
+                [(ngModel)]="busqueda"
+                placeholder="Buscar por nombre, payroll, departamento o puesto"
+                aria-label="Buscar personas adicionales por nombre, payroll, departamento o puesto"
+              />
+              @if (empleadosDisponibles().length) {
+                <div class="search-results">
+                  @for (empleado of empleadosDisponibles(); track empleado.Payroll) {
+                    <button type="button" class="employee-option" (click)="agregarEmpleado(empleado)">
+                      <span class="person-avatar" aria-hidden="true">{{ empleado.Full_Name.slice(0, 2).toUpperCase() }}</span>
+                      <span class="person-copy">
+                        <strong>{{ empleado.Full_Name }}</strong>
+                        <small>{{ empleado.Payroll }} · {{ empleado.Departament || 'Sin departamento' }} · {{ empleado.Correo || 'Sin correo registrado' }}</small>
+                      </span>
+                      <span class="add-person" aria-hidden="true">+</span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <p class="picker-message">No hay más empleados que coincidan con la búsqueda.</p>
+              }
+            }
+
+            @if (seleccionados.length) {
+              <section class="selected-people-section" aria-label="Personas agregadas a la carta">
+                <div class="selected-people-heading">
+                  <div>
+                    <h4>Agregados a la carta</h4>
+                    <p>Estas personas se incluirán como corresponsables.</p>
+                  </div>
+                  <span class="people-count">{{ seleccionados.length }}</span>
+                </div>
+                <div class="selected-people">
+                @for (persona of seleccionados; track persona.Payroll) {
+                  <div class="selected-person">
+                    <span class="person-avatar" aria-hidden="true">{{ persona.Full_Name.slice(0, 2).toUpperCase() }}</span>
+                    <span class="person-copy">
+                      <strong>{{ persona.Full_Name }} · {{ persona.Payroll }}</strong>
+                      <small>{{ persona.Correo || 'Sin correo registrado' }}</small>
+                    </span>
+                    <button type="button" [attr.aria-label]="'Quitar ' + persona.Full_Name" (click)="quitarEmpleado(persona.Payroll)">
+                      Quitar
+                    </button>
+                  </div>
+                }
+                </div>
+              </section>
+            }
+          </div>
+        }
+
+        @if (error) {
+          <p class="error-message" role="alert">{{ error }}</p>
+        }
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cancelado.emit()">Cancelar</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="cargando || cargandoEstados || errorCargaEstados || cargandoEmpleados || errorCargaEmpleados || !equipoSeleccionado || !titularActual"
+          (click)="crearCarta()"
+        >
+          {{ cargando ? 'Generando...' : 'Generar y revisar' }}
+        </button>
+      </footer>
+    }
+  </section>
+</div>

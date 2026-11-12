@@ -1,0 +1,74 @@
+<main class="scrap-page">
+  <header class="scrap-header">
+    <div class="page-heading">
+    
+      <h1>Producción</h1>
+    </div>
+  </header>
+
+  @if (mensaje) {
+    <app-alert type="orange" title="Movimiento completado" [message]="mensaje" (dismissed)="mensaje = ''" />
+  }
+  @if (error) {
+    <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" />
+  }
+
+  <section class="stats-grid" aria-label="Resumen de Producción">
+    <article class="stat-card">
+      <span class="stat-icon" aria-hidden="true"><ng-icon name="aspectsDashboard"></ng-icon></span>
+      <span class="stat-copy"><small>Equipos pendientes</small><strong>{{ equipos.length }}</strong></span>
+    </article>
+
+  </section>
+
+  <section class="workspace">
+    <div class="workspace-heading">
+      <div class="workspace-title"><h2>Equipos pendientes de liberar</h2></div>
+      <div class="heading-actions">
+        <button class="button button-secondary" type="button" aria-label="Ver historial de Producción" (click)="HistorialProduccion()">
+          <ng-icon name="remixHistoryLine" size="1.2em" aria-hidden="true"></ng-icon><span>Historial</span>
+        </button>
+        <button class="button button-primary" type="button" [disabled]="!seleccionados.size" (click)="abrirOrden()"><span>Crear orden</span><span class="button-count">{{ seleccionados.size }}</span></button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <label class="search-box" for="buscar-produccion"><span class="search-input-wrap"><span class="search-icon" aria-hidden="true"></span><input id="buscar-produccion" type="search" [formControl]="busqueda" placeholder="Service Tag, hostname, modelo o empleado..."></span></label>
+      <button class="select-all" type="button" [disabled]="!equiposFiltrados().length" (click)="seleccionarTodos()">
+        <span class="selection-mark" aria-hidden="true">{{ todosVisiblesSeleccionados() ? '−' : '+' }}</span>
+        {{ todosVisiblesSeleccionados() ? 'Quitar selección' : 'Seleccionar Todas' }}
+      </button>
+    </div>
+
+    @if (cargando) {
+      <p class="empty-state">Cargando equipos en producción...</p>
+    } @else if (equiposFiltrados().length === 0) {
+      <p class="empty-state">{{ equipos.length ? 'No hay equipos que coincidan con la búsqueda.' : 'No hay equipos pendientes en producción.' }}</p>
+    } @else {
+      <div class="list-meta"><p class="record-count">{{ equiposFiltrados().length }} equipos encontrados</p>@if (seleccionados.size > 0) {<p class="selection-count">{{ seleccionados.size }} seleccionados</p>}</div>
+      <section class="cards-grid" aria-label="Equipos en producción">
+        @for (equipo of equiposFiltrados(); track equipo.Service_Tag) {
+          <article class="scrap-card" [class.selected]="estaSeleccionado(equipo.Service_Tag)" (click)="alternarEquipo(equipo.Service_Tag)">
+            <label class="check-wrap" [attr.aria-label]="'Seleccionar ' + equipo.Service_Tag" (click)="$event.stopPropagation()">
+              <input type="checkbox" [checked]="estaSeleccionado(equipo.Service_Tag)" (change)="alternarEquipo(equipo.Service_Tag)">
+              <span class="checkmark"></span>
+            </label>
+            <div class="card-heading"><span class="device-icon"><ng-icon name="aspectsDashboard" size="20"></ng-icon></span><div class="device-main"><h3>{{ equipo.Service_Tag }}</h3><p>{{ equipo.Hostname || 'Sin hostname' }}</p><p class="device-model">{{ equipo.Marca || 'Sin marca' }} · {{ equipo.Modelo || 'Sin modelo' }}</p></div></div>
+            <div class="card-details"><span><small>Tipo de equipo</small><strong>{{ equipo.Tipo_Equipo || 'Sin tipo' }}</strong></span><span><small>IMEI / serie</small><strong>{{ equipo.IMEI || 'No registrado' }}</strong></span><span><small>Empleado anterior</small><strong>{{ equipo.Nombre_Empleado_Anterior || 'Sin empleado' }}</strong></span><span><small>Payroll anterior</small><strong>{{ equipo.Payroll_Anterior ?? 'Sin payroll' }}</strong></span></div>
+            <div class="trace"><small>Último movimiento</small><span>{{ equipo.Trace || 'Sin detalle registrado' }}</span></div>
+          </article>
+        }
+      </section>
+    }
+  </section>
+</main>
+
+@if (mostrarOrden) {
+  <div class="modal-backdrop" role="presentation" (click)="cancelarOrden()">
+    <section class="order-modal" role="dialog" aria-modal="true" aria-labelledby="orden-produccion-title" (click)="$event.stopPropagation()">
+      <header class="modal-header"><div><p class="section-kicker">NUEVA ORDEN</p><h2 id="orden-produccion-title">Orden de liberación</h2></div><button class="close-button" type="button" aria-label="Cerrar" (click)="cancelarOrden()">×</button></header>
+      <p class="modal-summary"><strong>{{ seleccionados.size }} equipo(s)</strong> seleccionados. Los registros permanecerán en producción e historial.</p>
+      <label class="field" for="comentario-orden"><span>Comentario de la orden</span><textarea id="comentario-orden" [(ngModel)]="comentarioOrden" placeholder="Indica el motivo de la liberación"></textarea></label>
+      <div class="modal-actions"><button class="button button-secondary" type="button" (click)="cancelarOrden()">Cancelar</button><button class="button button-primary" type="button" [disabled]="!comentarioOrden.trim()" (click)="liberarSeleccionados()">Liberar equipos</button></div>
+    </section>
+  </div>
+}

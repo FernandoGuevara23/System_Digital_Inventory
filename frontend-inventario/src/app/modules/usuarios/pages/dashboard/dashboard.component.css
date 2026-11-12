@@ -1,0 +1,559 @@
+:host {
+  --ink: #10213e;
+  --muted: #64748b;
+  --line: #e1e8f0;
+  --surface: #fff;
+  --accent: #248365;
+  display: block;
+  min-height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.dashboard-page {
+  min-height: 100%;
+  padding: var(--page-top) var(--page-gutter) 40px;
+  background: #f4f7fb;
+  color: var(--ink);
+}
+
+.dash-header,
+.overview-section,
+.dashboard-grid,
+.modules-section,
+.dashboard-warning {
+  width: min(100%, var(--page-width));
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-eyebrow {
+  margin: 0 0 7px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.dash-header h1 {
+  margin: 0;
+  font-size: clamp(25px, 3vw, 32px);
+  line-height: 1.15;
+}
+
+.dashboard-date {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.dashboard-warning {
+  margin-bottom: 18px;
+  border: 1px solid #f4d59a;
+  border-radius: 9px;
+  background: #fff9eb;
+  color: #875b05;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 11px 14px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.section-heading h2,
+.panel-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.section-heading h2 {
+  font-size: 18px;
+}
+
+.section-heading p,
+.panel-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.section-heading p {
+  text-align: right;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 142px), 1fr));
+  gap: clamp(8px, 1vw, 12px);
+}
+
+.kpi-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 128px;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: clamp(11px, 1.1vw, 15px);
+  text-decoration: none;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.kpi-card:hover,
+.module-card:hover {
+  border-color: #b5d8ca;
+  box-shadow: 0 7px 20px rgb(16 33 62 / 8%);
+  transform: translateY(-2px);
+}
+
+.kpi-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  margin-bottom: 9px;
+  border-radius: 10px;
+  font-size: 19px;
+}
+
+.kpi-label {
+  color: #475569;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .035em;
+  line-height: 1.35;
+}
+
+.kpi-card strong {
+  margin-top: 4px;
+  font-size: clamp(23px, 2vw, 27px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.kpi-card small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.kpi-employees .kpi-icon,
+.module-employees > ng-icon {
+  background: #eef2ff;
+  color: #4f46a5;
+}
+
+.kpi-equipment .kpi-icon,
+.module-equipment > ng-icon {
+  background: #eff6ff;
+  color: #2563a8;
+}
+
+.kpi-lines .kpi-icon,
+.module-lines > ng-icon {
+  background: #ecfeff;
+  color: #147d8b;
+}
+
+.kpi-scrap .kpi-icon,
+.module-scrap > ng-icon {
+  background: #ecfdf3;
+  color: #248365;
+}
+
+.kpi-donations .kpi-icon,
+.module-donations > ng-icon {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.kpi-production .kpi-icon {
+  background: #f5f3ff;
+  color: #6d4bc3;
+}
+
+.kpi-sales .kpi-icon {
+  background: #fff1f2;
+  color: #be4058;
+}
+
+.dashboard-grid {
+  display: grid;
+  margin-top: 20px;
+}
+
+.panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 20px 22px;
+}
+
+.activity-panel {
+  min-height: 0;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 11px;
+}
+
+.panel-heading > div {
+  display: grid;
+  gap: 4px;
+}
+
+.panel-heading a {
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 650;
+  padding: 7px 8px;
+  text-decoration: none;
+  transition: background-color .16s ease;
+}
+
+.panel-heading a:hover {
+  background: #eff8f3;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-item {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #edf1f5;
+  padding: 10px 2px;
+}
+
+.activity-item:last-child {
+  border-bottom: 0;
+}
+
+.activity-item time {
+  width: 82px;
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.activity-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activity-copy strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.activity-copy small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-activity {
+  margin: 0;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 18px;
+}
+
+.modules-section {
+  margin-top: 20px;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: clamp(8px, 1vw, 12px);
+}
+
+.module-card {
+  display: flex;
+  min-width: 0;
+  min-height: 68px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px;
+  text-decoration: none;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.module-card > ng-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 19px;
+}
+
+.module-card > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.module-card strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-card small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-letters > ng-icon {
+  background: #fef2f2;
+  color: #a13d3d;
+}
+
+:host-context(html[data-theme="dark"]) .dashboard-page {
+  background: #0b1424;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-card, .module-card, .panel) {
+  border-color: #34445d;
+  background: #111c2e;
+  color: #e2e8f0;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-card:hover, .module-card:hover) {
+  border-color: #52718d;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 24%);
+}
+
+:host-context(html[data-theme="dark"]) :is(.section-heading p, .activity-item time) {
+  color: #9eacc0;
+}
+
+:host-context(html[data-theme="dark"]) .activity-item {
+  border-color: #293950;
+}
+
+:host-context(html[data-theme="dark"]) .panel-heading a:hover {
+  background: #203047;
+}
+
+:host-context(html[data-theme="dark"]) .dashboard-warning {
+  border-color: #735a2d;
+  background: #302719;
+  color: #f2d394;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-employees .kpi-icon, .module-employees > ng-icon) {
+  background: #28264c;
+  color: #c4bdff;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-equipment .kpi-icon, .module-equipment > ng-icon) {
+  background: #1c3550;
+  color: #9bcfff;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-lines .kpi-icon, .module-lines > ng-icon) {
+  background: #153a43;
+  color: #89e0e8;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-scrap .kpi-icon, .module-scrap > ng-icon) {
+  background: #173c32;
+  color: #8be0b4;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-donations .kpi-icon, .module-donations > ng-icon) {
+  background: #46321d;
+  color: #f8c784;
+}
+
+:host-context(html[data-theme="dark"]) .kpi-production .kpi-icon {
+  background: #332b50;
+  color: #d0bdff;
+}
+
+:host-context(html[data-theme="dark"]) .kpi-sales .kpi-icon {
+  background: #482732;
+  color: #ffb7c5;
+}
+
+:host-context(html[data-theme="dark"]) :is(.empty-activity, .activity-loading) {
+  border: 1px solid #34445d;
+  background: #203047;
+  color: #c7d4e4 !important;
+}
+
+:host-context(html[data-theme="dark"]) :is(.kpi-label, .dashboard-date, .activity-copy small, .module-card small) {
+  color: #b7c4d5 !important;
+}
+
+.kpi-card:focus-visible,
+.module-card:focus-visible,
+.panel-heading a:focus-visible {
+  outline: 3px solid rgb(36 131 101 / 32%);
+  outline-offset: 3px;
+}
+
+@media (max-width: 680px) {
+  .dashboard-page {
+    padding: var(--page-top) var(--page-gutter) 32px;
+  }
+
+  .dash-header {
+    margin-bottom: 23px;
+  }
+
+  .kpi-card {
+    min-height: 118px;
+    padding: 12px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .section-heading p {
+    text-align: left;
+  }
+
+  .dashboard-grid,
+  .modules-section {
+    margin-top: 23px;
+  }
+
+  .panel {
+    padding: 17px 16px;
+  }
+
+}
+
+@media (max-width: 520px) {
+  .kpi-grid,
+  .modules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-page {
+    padding-right: var(--page-gutter);
+    padding-left: var(--page-gutter);
+  }
+
+  .kpi-card {
+    min-height: 112px;
+    padding: 10px;
+  }
+
+  .kpi-label {
+    font-size: 10px;
+  }
+
+  .kpi-card strong {
+    font-size: 27px;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+  }
+
+  .panel-heading h2 {
+    font-size: 14px;
+  }
+
+  .panel-heading a {
+    font-size: 11px;
+    padding: 5px;
+  }
+
+  .activity-item {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .activity-item time {
+    width: 67px;
+    font-size: 11px;
+    padding-top: 2px;
+  }
+
+  .activity-copy strong {
+    font-size: 12px;
+  }
+
+  .module-card {
+    gap: 8px;
+    padding: 10px 8px;
+  }
+
+  .module-card > ng-icon {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpi-card,
+  .module-card,
+  .panel-heading a {
+    transition: none;
+  }
+}

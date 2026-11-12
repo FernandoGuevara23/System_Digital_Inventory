@@ -1,0 +1,23 @@
+@if (isSending()) {
+  <div class="email-sending-backdrop" role="status" aria-live="polite" aria-label="Enviando correo">
+    <section class="email-sending-card">
+      <svg class="mailing-animation" viewBox="0 0 180 180" aria-hidden="true">
+        <circle class="orbit orbit--outer" cx="90" cy="90" r="69" />
+        <circle class="orbit orbit--inner" cx="90" cy="90" r="48" />
+        <path class="flight-trail" d="M36 112c20-1 26-27 44-27" />
+        <g class="paper-plane">
+          <path d="M51 82 125 51 99 126 83 99 51 82Z" />
+          <path class="plane-fold" d="m83 99 42-48-26 75-16-27Z" />
+          <path class="plane-line" d="m83 99 42-48" />
+        </g>
+        <g class="sent-check">
+          <circle cx="127" cy="127" r="20" />
+          <path d="m118 127 6 6 12-13" />
+        </g>
+      </svg>
+      <h2>Enviando correo</h2>
+      <p>Estamos enviando la carta. Esto puede tardar unos segundos.</p>
+      <span class="sending-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    </section>
+  </div>
+}

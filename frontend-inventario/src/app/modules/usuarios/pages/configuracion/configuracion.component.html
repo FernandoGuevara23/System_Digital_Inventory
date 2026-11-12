@@ -1,0 +1,68 @@
+<main class="config-page">
+  @if (errorCarga) {
+    <app-alert type="error" title="No se pudo cargar la configuración" [message]="errorCarga" (dismissed)="errorCarga = ''" />
+  }
+  <header class="page-header">
+    <div class="heading-block">
+      <h1>Configuración</h1>
+      
+    </div>
+
+    <div class="stats-row">
+    
+    </div>
+  </header>
+
+  <section class="admin-card" aria-label="Usuario administrador">
+    <div class="admin-avatar">{{ (usuarioActual?.Nombre_Completo || usuarioActual?.UserName || 'A').charAt(0).toUpperCase() }}</div>
+    <div class="admin-info">
+      <h2>{{ usuarioActual?.Nombre_Completo || usuarioActual?.UserName || 'Administrador' }}</h2>
+      <small>Usuario: {{ usuarioActual?.UserName || 'Administrador' }}</small>
+      <p>Administrador</p>
+    </div>
+  </section>
+
+  <section class="module-grid" aria-label="Módulos de configuración">
+  @for (module of modules; track module.title) {
+    <article class="module-card module-{{ module.accent }}">
+      <div class="module-header">
+        
+        
+        <div class="module-icon">
+          <ng-icon [name]="$any(module.icon)" size="2rem" color="SeaGreen"></ng-icon>
+        </div>
+        
+        <div class="module-title-wrap">
+          <h2>{{ module.title }}</h2>
+        </div>
+      </div>
+
+      <ul class="module-list">
+        @for (item of module.items; track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+
+      <button type="button" class="module-button" (click)="seleccionarModulo(module.target)">
+        {{ module.action }}
+      </button>
+    </article>
+  }
+  </section>
+
+
+
+  <section class="module-panel" aria-label="Contenido de configuración">
+    @if (activeModule === 'usuarios') {
+      <app-usuarios />
+    } @else if (activeModule === 'catalogos') {
+      <app-catalogos />
+    } @else if (activeModule === 'telefonos') {
+      <app-historial-apple-id />
+    } @else {
+      <div class="config-summary">
+        <h3>Configuración general</h3>
+      </div>
+    }
+  </section>
+</main>

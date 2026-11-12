@@ -1,0 +1,49 @@
+@if (dialog(); as activeDialog) {
+  <div class="dialog-backdrop" (click)="cerrar()">
+    <section
+      class="dialog-card"
+      [class]="'dialog-card dialog-card--' + activeDialog.severity"
+      role="alertdialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'app-dialog-title-' + activeDialog.id"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="dialog-header">
+        <span class="dialog-icon" aria-hidden="true">
+          @if (activeDialog.severity === 'success') { ✓ }
+          @else if (activeDialog.severity === 'error') { ! }
+          @else if (activeDialog.severity === 'warning' || activeDialog.severity === 'orange') { ! }
+          @else { i }
+        </span>
+        <h2 [id]="'app-dialog-title-' + activeDialog.id">{{ activeDialog.title }}</h2>
+        <button type="button" class="dialog-close" aria-label="Cerrar" (click)="cerrar()">×</button>
+      </header>
+      <div class="dialog-body">
+        <p>{{ activeDialog.message }}</p>
+        @if (activeDialog.kind === 'prompt') {
+          <textarea
+            [ngModel]="promptValue()"
+            (ngModelChange)="promptValue.set($event)"
+            [placeholder]="activeDialog.placeholder"
+            aria-label="Comentario"
+            rows="3"
+            autofocus
+          ></textarea>
+        }
+      </div>
+      <footer class="dialog-actions">
+        @if (activeDialog.kind !== 'alert') {
+          <button type="button" class="dialog-button dialog-button--secondary" (click)="cerrar()">Cancelar</button>
+        }
+        <button
+          type="button"
+          class="dialog-button dialog-button--primary"
+          [disabled]="activeDialog.kind === 'prompt' && !promptValue().trim()"
+          (click)="aceptar(activeDialog)"
+        >
+          {{ activeDialog.kind === 'confirm' ? 'Confirmar' : activeDialog.kind === 'prompt' ? 'Continuar' : 'Entendido' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}

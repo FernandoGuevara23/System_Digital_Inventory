@@ -1,0 +1,125 @@
+<main class="dashboard-page">
+  <header class="dash-header">
+    <div>
+      <h1>Inventario IT</h1> 
+      <p class="dashboard-date">{{ today }}</p>
+    </div>
+  </header>
+
+  <p class="dashboard-warning" role="alert" *ngIf="error">{{ error }}</p>
+
+  <section class="overview-section" aria-labelledby="indicators-title">
+    <div class="section-heading">
+      <div>
+      </div>                                                                                                     
+    </div>
+
+    <div class="kpi-grid">
+      <a class="kpi-card kpi-employees" routerLink="/empleados">
+        <span class="kpi-icon"><ng-icon name="remixGroupFill" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">Empleados activos</span>
+        <strong>{{ empleadosActivos }}</strong>
+        <small>{{ resumen.empleados.total }} totales</small>
+      </a>
+      <a class="kpi-card kpi-equipment" routerLink="/equipos">
+        <span class="kpi-icon"><ng-icon name="phosphorDevicesLight" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">Equipos asignados</span>
+        <strong>{{ equiposAsignados }}</strong>
+        <small>{{ resumen.equipos.inventario }} en inventario</small>
+      </a>
+      <a class="kpi-card kpi-lines" routerLink="/lineas">
+        <span class="kpi-icon"><ng-icon name="phosphorPhoneCallBold" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">Líneas activas</span>
+        <strong>{{ lineasActivas }}</strong>
+        <small>{{ resumen.lineas.total }} totales</small>
+      </a>
+      
+      <a class="kpi-card kpi-scrap" routerLink="/scrap">
+        <span class="kpi-icon"><ng-icon name="remixRecycleLine" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">Scrap pendiente</span>
+        <strong>{{ scrapPendiente }}</strong>
+      </a>
+      <a class="kpi-card kpi-donations" routerLink="/donaciones">
+        <span class="kpi-icon"><ng-icon name="phosphorGiftDuotone" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">Donaciones pendientes</span>
+        <strong>{{ DonacionesPendiente }}</strong>
+      </a>
+      <a class="kpi-card kpi-production" routerLink="/produccion">
+        <span class="kpi-icon"><ng-icon name="aspectsDashboard" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">En producción</span>
+        <strong>{{ ProduccionPendiente }}</strong>
+        <small>Equipos en proceso</small>
+      </a>
+      <a class="kpi-card kpi-sales" routerLink="/ventas">
+        <span class="kpi-icon"><ng-icon name="lucideShoppingBag" aria-hidden="true"></ng-icon></span>
+        <span class="kpi-label">En ventas</span>
+        <strong>{{ VentasPendiente }}</strong>
+        <small>Equipos disponibles para venta</small>
+      </a>
+    </div>
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="panel activity-panel" aria-labelledby="activity-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="activity-title">Actividad reciente</h2>
+        </div>
+        <a routerLink="/historial">Ver historial <span aria-hidden="true">→</span></a>
+      </div>
+      <p class="activity-loading" role="status" *ngIf="cargandoMovimientos">Cargando historial...</p>
+      <div class="activity-list" *ngIf="!cargandoMovimientos && ultimosMovimientos.length">
+        <div class="activity-item" *ngFor="let movimiento of ultimosMovimientos">
+          <time>{{ movimiento.Fecha | date:'dd/MM/yyyy' }}</time>
+          <div class="activity-copy">
+            <strong>{{ movimientoEtiqueta(movimiento) }}</strong>
+            <small>{{ movimiento.Service_Tag }} · {{ movimiento.Detalle || 'Sin detalle' }}</small>
+          </div>
+        </div>
+      </div>
+      <ng-container *ngIf="!cargandoMovimientos && !ultimosMovimientos.length">
+        <p class="empty-activity">No hay movimientos registrados.</p>
+      </ng-container>
+    </article>
+  </section>
+
+  <section class="modules-section" aria-labelledby="modules-title">
+    <div class="section-heading">
+      <h2 id="modules-title">Accesos directos</h2>
+    </div>
+    <nav class="modules-grid" aria-label="Módulos">
+      <a class="module-card module-employees" routerLink="/empleados">
+        <ng-icon name="remixGroupFill" aria-hidden="true"></ng-icon>
+        <span><strong>Empleados</strong><small>{{ empleadosActivos }} activos</small></span>
+      </a>
+      <a class="module-card module-equipment" routerLink="/equipos">
+        <ng-icon name="phosphorDevicesLight" aria-hidden="true"></ng-icon>
+        <span><strong>Equipos</strong><small>{{ resumen.equipos.inventario }} registros</small></span>
+      </a>
+      <a class="module-card module-scrap" routerLink="/scrap">
+        <ng-icon name="remixRecycleLine" aria-hidden="true"></ng-icon>
+        <span><strong>Scrap</strong><small>{{ scrapPendiente }} pendientes</small></span>
+      </a>
+      <a class="module-card module-donations" routerLink="/donaciones">
+        <ng-icon name="phosphorGiftDuotone" aria-hidden="true"></ng-icon>
+        <span><strong>Donaciones</strong><small>{{ DonacionesPendiente }} pendientes</small></span>
+      </a>
+      <a class="module-card module-lines" routerLink="/lineas">
+        <ng-icon name="phosphorPhoneCallBold" aria-hidden="true"></ng-icon>
+        <span><strong>Teléfonos</strong><small>{{ lineasActivas }} activas</small></span>
+      </a>
+      <a class="module-card module-letters" routerLink="/cartas-responsivas">
+        <ng-icon name="lucideMailPlus" aria-hidden="true"></ng-icon>
+        <span><strong>Cartas</strong><small>Envío y firma</small></span>
+      </a>
+      <a class="module-card module-production" routerLink="/produccion">
+        <ng-icon name="aspectsDashboard" aria-hidden="true"></ng-icon>
+        <span><strong>Producción</strong><small>{{ ProduccionPendiente }} pendientes</small></span>
+      </a>
+      <a class="module-card module-sales" routerLink="/ventas">
+        <ng-icon name="lucideShoppingBag" aria-hidden="true"></ng-icon>
+        <span><strong>Ventas</strong><small>{{ VentasPendiente }} pendientes</small></span>
+      </a>
+    </nav>
+  </section>
+</main>

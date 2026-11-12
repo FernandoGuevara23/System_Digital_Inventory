@@ -1,0 +1,93 @@
+<section class="historial-page">
+  <header class="historial-header">
+    <div class="page-heading">
+      <h1>Historial</h1>
+    </div>
+    <button type="button" class="export-btn" [disabled]="cargando || exportandoExcel" (click)="descargarExcel()">
+      <span class="export-icon" aria-hidden="true">⇩</span>
+      {{ exportandoExcel ? 'Generando Excel...' : 'Exportar Excel' }}
+    </button>
+  </header>
+
+  <div class="toolbar-panel">
+    <div class="toolbar">
+      <label class="search-field">
+        <span>Buscar movimiento</span>
+        <input
+          class="search-input"
+          type="search"
+          [(ngModel)]="termino"
+          (ngModelChange)="buscar()"
+          placeholder="Usuario, equipo o detalle..."
+          aria-label="Buscar historial"
+        />
+      </label>
+
+      <label class="module-field">
+        <span>Módulo</span>
+        <select class="filter-select" [ngModel]="filtroModulo" (ngModelChange)="cambiarModulo($event)" aria-label="Filtrar por módulo">
+          <option *ngFor="let modulo of modulosDisponibles" [value]="modulo">{{ modulo }}</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert-error" role="alert">
+    <span class="alert-icon" aria-hidden="true">!</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <section class="history-panel" *ngIf="!cargando; else loading">
+    <div class="history-heading">
+      <div>
+        <h2>Movimientos recientes</h2>
+      </div>
+      <span class="history-total">{{ totalAcciones }} resultados · página {{ paginaActual }} de {{ totalPaginas || 1 }}</span>
+    </div>
+    <p class="scroll-hint">Desliza la tabla horizontalmente para consultar todos los detalles.</p>
+    <div class="table-wrap" *ngIf="registrosFiltrados.length; else emptyState">
+      <table class="historial-table" aria-label="Historial de movimientos">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Módulo</th>
+            <th>Acción</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let registro of registrosFiltrados">
+            <td class="id-cell">{{ numeroRegistro(registro) }}</td>
+            <td class="date-cell">{{ formatearFecha(registro.Fecha) }}</td>
+            <td class="user-cell">{{ registro.Usuario || extractUsuario(registro.Detalle) || 'Sistema' }}</td>
+            <td><span class="module-badge">{{ getModulo(registro) }}</span></td>
+            <td>
+              <app-badge [status]="mapAccion(registro.Accion)"></app-badge>
+            </td>
+            <td class="detail-cell">
+              <strong *ngIf="getEquipoReferenciado(registro) as serviceTag">{{ serviceTag }} · </strong>
+              {{ registro.Detalle || 'Sin detalle' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <span class="empty-icon" aria-hidden="true">⌕</span>
+        <h3>No hay movimientos para mostrar</h3>
+        <p>Prueba con otro término o selecciona un módulo diferente.</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <ng-template #loading>
+    <div class="loading-state" role="status">
+      <span class="loading-indicator"></span>
+      <span>Cargando historial...</span>
+    </div>
+  </ng-template>
+</section>

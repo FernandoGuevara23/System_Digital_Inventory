@@ -1,0 +1,237 @@
+<main class="employees-page">
+  <header class="screen-header">
+    <div>
+      <h1>Empleados</h1>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-primary" (click)="alternarFormulario()" [attr.aria-label]="mostrarFormulario ? 'Cancelar nuevo empleado' : 'Agregar empleado'">
+        @if (mostrarFormulario) {
+          <span>Cancelar</span>
+        } @else {
+          <ng-icon name="matPersonAddAlt1Round" size="1.25em" aria-hidden="true"></ng-icon>
+          <span>Nuevo empleado</span>
+        }
+      </button>
+      <button type="button" class="btn-secondary" (click)="CargarEmpleadosExcel()" aria-label="Exportar empleados a Excel">
+        <ng-icon name="phosphorMicrosoftExcelLogoLight" size="1.25em" aria-hidden="true"></ng-icon>
+        <span>Exportar Excel</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="stats-row">
+    <article class="stat-card"><span>Total</span><strong>{{ empleados.length }}</strong></article>
+    <article class="stat-card green"><span>Activos</span><strong>{{ cantidadActivos() }}</strong></article>
+    <article class="stat-card amber"><span>Inactivos</span><strong>{{ cantidadInactivos() }}</strong></article>
+  </div>
+
+  <div class="toolbar">
+    <input class="search-input" type="search" [formControl]="busquedaControl" placeholder="Buscar empleado..." aria-label="Buscar empleados">
+    <nav class="filters" aria-label="Filtrar empleados">
+      <button type="button" [class.active]="vistaEmpleados === 'todos'" (click)="cambiarVista('todos')">Todos</button>
+      <button type="button" [class.active]="vistaEmpleados === 'activos'" (click)="cambiarVista('activos')">Activos</button>
+      <button type="button" [class.active]="vistaEmpleados === 'inactivos'" (click)="cambiarVista('inactivos')">Inactivos</button>
+    </nav>
+  </div>
+
+  @if (mensaje) {
+    <app-alert [type]="tipoMensaje" title="Operación completada" [message]="mensaje" (dismissed)="mensaje = ''" />
+  }
+  @if (error) {
+    <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" />
+  }
+
+  @if (mostrarFormulario) {
+    <div class="modal-backdrop" (click)="alternarFormulario()">
+      <section class="create-modal" role="dialog" aria-modal="true" aria-labelledby="new-employee-title" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2 id="new-employee-title">Nuevo empleado</h2>
+          <button type="button" class="modal-close" aria-label="Cerrar" (click)="alternarFormulario()">×</button>
+        </header>
+        <form [formGroup]="empleadoForm" (ngSubmit)="guardarEmpleado()" class="form-grid">
+          <div class="field-full photo-upload-field">
+            <label for="employee-photo">Foto de perfil</label>
+            <button class="photo-upload-button" type="button" (click)="fotoInput.click()">
+              <ng-icon name="remixImageUploadLine" size="2em" aria-hidden="true"></ng-icon>
+              <span>Seleccionar foto</span>
+            </button>
+            <input #fotoInput id="employee-photo" class="photo-upload-input" type="file" (change)="seleccionarFoto($event)" accept="image/*" aria-label="Seleccionar foto de perfil">
+          </div>
+          @if (fotoSeleccionada) {
+            <div class="preview-container">
+              <img [src]="fotoSeleccionada" alt="Vista previa" class="preview-image">
+            </div>
+          }
+          <label class="field-full">Payroll<input type="number" formControlName="payroll"></label>
+          <label class="field-full">Nombre completo<input type="text" formControlName="full_name"></label>
+          <label>Correo <input type="email" formControlName="correo" ></label>
+          <label>Departamento<select formControlName="departament"><option value="">Seleccione</option>@for (departamento of departamentos; track departamento.Id) {<option [value]="departamento.Nombre_Departamento">{{ departamento.Nombre_Departamento }}</option>}</select></label>
+          <label>Puesto<input type="text" formControlName="position"></label>
+          <label>Área<input type="text" formControlName="area"></label>
+          <!-- <label>OUnit<input type="text" formControlName="ounit"></label> -->
+          <label>Manager<input type="text" formControlName="manager" readonly></label>
+          <label>CC<input type="number" formControlName="cc"></label>
+          <div class="form-actions field-full"><button class="btn-secondary" type="button" (click)="alternarFormulario()">Cancelar</button><button class="btn-primary" type="submit">Guardar</button></div>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (empleados.length === 0) {
+    <p class="empty-state">No hay empleados registrados.</p>
+  } @else if (empleadosFiltrados().length === 0) {
+    <p class="empty-state">No se encontraron empleados.</p>
+  } @else {
+    <section class="cards-grid" aria-label="Lista de empleados">
+      @for (empleado of empleadosFiltrados(); track empleado.Payroll) {
+        <button type="button" class="emp-card" (click)="seleccionarEmpleado(empleado)">
+          <div class="card-top">
+            <div class="avatar profile-link" [class.inactive]="!empleado.Estado" (click)="editarEmpleado(empleado); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="editarEmpleado(empleado)">
+              @if (empleado.Foto_URL && !fotosNoDisponibles.has(empleado.Payroll)) { <img [src]="obtenerUrlFoto(empleado.Foto_URL)" [alt]="'Foto de ' + empleado.Full_Name" (error)="marcarFotoNoDisponible(empleado.Payroll)"> }
+              @else { {{ iniciales(empleado) }} }
+            </div>
+            <div><h2 class="card-name profile-link" (click)="editarEmpleado(empleado); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="editarEmpleado(empleado)">{{ empleado.Full_Name }}</h2><p class="card-sub">{{ empleado.Payroll || 'Sin payroll' }}</p></div>
+          <div style="text-align: right;">
+            <strong class="depto-tag">Equipos:{{ ContarEquiposAsignados(empleado)  }}</strong>
+          </div>
+          </div>
+          <div class="card-mid"><span class="depto-tag">{{ empleado.Departament || 'Sin departamento' }}</span>
+          <span class="status" [class.inactive-status]="!empleado.Estado">{{ empleado.Estado ? 'Activo' : 'Inactivo' }}</span> 
+        </div>
+          <div class="card-bot"><span class="emp-id"> {{ empleado.Position  || 'Sin puesto' }} Correo: {{ empleado.Correo || 'Sin correo' }} CC:{{ empleado.CC || 'Sin CC' }}</span></div>
+        </button>
+      }
+    </section>
+  }
+</main>
+
+@if (mostrarModalCarta && empleadoSeleccionado && tipoCartaModal) {
+  <app-carta-generacion
+    [titular]="empleadoSeleccionado"
+    [tipo]="tipoCartaModal"
+    [equipos]="equiposDisponiblesCarta(empleadoSeleccionado)"
+    [equipoInicial]="equipoInicialCarta"
+    [cargandoEstados]="cargandoEstadosCartas"
+    [errorCargaEstados]="errorCargaEstadosCartas"
+    (generada)="cartaGenerada($event)"
+    (enviada)="cartaEnviada($event)"
+    (cancelado)="cerrarModalCarta()"
+  />
+}
+
+@if (empleadoSeleccionado; as empleado) {
+  <aside class="profile-panel" aria-label="Perfil del empleado">
+    <div class="profile-header">
+      <button type="button" class="panel-close" aria-label="Cerrar perfil" (click)="cerrarPerfil()">×</button>
+      <div class="profile-heading">
+        <div class="avatar big-avatar" (click)="editarEmpleado(empleado); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="editarEmpleado(empleado)"> @if (empleado.Foto_URL && !fotosNoDisponibles.has(empleado.Payroll)) { <img [src]="obtenerUrlFoto(empleado.Foto_URL)" [alt]="'Foto de ' + empleado.Full_Name" (error)="marcarFotoNoDisponible(empleado.Payroll)"> }
+              @else { {{ iniciales(empleado) }} }</div>
+        <div class="card-name profile-link" (click)="editarEmpleado(empleado); $event.stopPropagation()" role="link" tabindex="0" (keydown.enter)="editarEmpleado(empleado)" ><h2>{{ empleado.Full_Name }}</h2><span class="status" [class.inactive-status]="!empleado.Estado">{{ empleado.Estado ? 'Activo' : 'Inactivo' }}</span></div>
+      </div>
+    </div>
+    <div class="profile-body">
+      @if (editandoEmpleado) {
+        <form class="info-grid" [formGroup]="edicionEmpleadoForm" (ngSubmit)="guardarEdicionEmpleado()">
+          @if (error) {
+            <p class="edit-error" role="alert">{{ error }}</p>
+          }
+          <label>
+            <small>Correo</small>
+            <input type="email" formControlName="Correo">
+            @if (edicionEmpleadoForm.controls['Correo'].touched && edicionEmpleadoForm.controls['Correo'].hasError('email')) {
+              <small role="alert">El correo electrónico no es válido.</small>
+            }
+          </label>
+          <label>
+            <small>Estado</small>
+            <select formControlName="Estado">
+              <option [ngValue]="true">Activo</option>
+              <option [ngValue]="false">Inactivo</option>
+            </select>
+          </label>
+          <div class="profile-actions">
+            <button type="submit" class="btn-primary action-button" [disabled]="guardandoEdicionEmpleado" (click)="guardarEdicionEmpleado()">
+              <span>{{ guardandoEdicionEmpleado ? 'Guardando...' : 'Guardar cambios' }}</span>
+            </button>
+            <button type="button" class="btn-secondary action-button" [disabled]="guardandoEdicionEmpleado" (click)="cancelarEdicionEmpleado()">
+              <span>Cancelar</span>
+            </button>
+          </div>
+        </form>
+      } @else {
+      <div class="info-grid">
+      <div><small>Payroll</small><span>{{ empleado.Payroll }}</span></div>
+      <div><small>Correo</small><span>{{ empleado.Correo || '—' }}</span></div>
+        <div><small>Departamento</small><span>{{ empleado.Departament || '—' }}</span></div>
+      <div><small>Área</small><span>{{ empleado.Area || '—' }}</span></div>
+      <div><small>Puesto</small><span>{{ empleado.Position || '—' }}</span></div>
+      <div><small>OUnit</small><span>{{ empleado.OUnit || '—' }}</span></div>
+      <div><small>Manager</small><span>{{ empleado.Manager || '—' }}</span></div>
+      <div><small>CC</small><span>{{ empleado.CC || '—' }}</span></div>
+      </div>
+      <div class="profile-actions">
+        <button type="button" class="btn-primary action-button" (click)="iniciarEdicionEmpleado()" aria-label="Editar empleado" title="Editar empleado">
+          <ng-icon name="aspectsEdit" size="1.25em" aria-hidden="true"></ng-icon>
+          <span>Editar</span>
+        </button>
+        <button type="button" class="btn-primary action-button" (click)="abrirReasignacionGeneral()" aria-label="Reasignar equipo" title="Reasignar equipo">
+          <ng-icon name="phosphorArrowsLeftRightBold" size="1.25em" aria-hidden="true"></ng-icon>
+          <span>Reasignar</span>
+        </button>
+        <button type="button" class="btn-secondary action-button" (click)="abrirCarta('INDIVIDUAL')" aria-label="Generar carta individual" title="Generar carta individual">
+          <ng-icon name="fluentPersonEdit" size="1.25em" aria-hidden="true"></ng-icon>
+          <span>Carta individual</span>
+        </button>
+        <button type="button" class="btn-secondary action-button" (click)="abrirCarta('COMPARTIDA')" aria-label="Generar carta compartida" title="Generar carta compartida">
+          <ng-icon name="fluentPeopleEditFilled" size="1.25em" aria-hidden="true"></ng-icon>
+          <span>Carta compartida</span>
+        </button>
+      </div>
+      }
+      <h3>Equipos por empleado ({{ ContarEquiposAsignados(empleado) }})</h3>
+      <div class="profile-list" *ngIf="equiposDelEmpleado(empleado).length; else noEquipment">
+        <button type="button" class="profile-item" *ngFor="let equipo of equiposDelEmpleado(empleado)" (click)="abrirEquipo(equipo.Service_Tag)">
+          <div>
+            <strong>{{ equipo.Marca }} {{ equipo.Modelo }}</strong>
+            <small>{{ equipo.Service_Tag }} · {{ equipo.Tipo_Equipo }}</small>
+            <span [class]="claseEstadoCarta(equipo.Service_Tag)">{{ etiquetaEstadoCarta(equipo.Service_Tag) }}</span>
+            @if (personasCompartidasDeEquipo(equipo.Service_Tag).length) {
+              <small>Compartido con: {{ nombresCompartidosDeEquipo(equipo.Service_Tag) }}</small>
+            }
+          </div>
+          <span class="status">Ver detalle →</span>
+        </button>
+      </div>
+      <ng-template #noEquipment><p class="empty-state">Este empleado no tiene equipos asignados.</p></ng-template>
+      @if (equiposCompartidosDeEmpleado(empleado).length) {
+        <h3>Equipos compartidos ({{ equiposCompartidosDeEmpleado(empleado).length }})</h3>
+        <div class="profile-list">
+          @for (equipo of equiposCompartidosDeEmpleado(empleado); track equipo.service_tag) {
+            <button type="button" class="profile-item shared-item" (click)="abrirEquipoCompartido(equipo.service_tag)">
+              <div>
+                <strong>{{ equipo.brand_model }}</strong>
+                <small>{{ equipo.service_tag }} · {{ equipo.device_type }}</small>
+                <span class="shared-label">Compartido</span>
+                <small>Comparte este equipo con {{ equipo.nombre_titular }} (Payroll {{ equipo.payroll_titular }})</small>
+              </div>
+              <span class="status">Ver equipo →</span>
+            </button>
+          }
+        </div>
+      }
+      <h3 *ngIf="lineasDelEmpleado(empleado).length">Líneas telefónicas ({{ lineasDelEmpleado(empleado).length }})</h3>
+      <div class="profile-list"><div class="profile-item" *ngFor="let linea of lineasDelEmpleado(empleado)"><div><strong>{{ linea.Numero_Telefono }}</strong><small>{{ linea.Service_Tag }} · {{ linea.Account || 'Sin cuenta' }}</small></div><span class="status">Activa</span></div></div>
+    </div>
+    <!--<button type="button" (click)="ReportesEquiposPorEmpleado()">PDF</button>-->
+
+  </aside>
+}
+
+@if (equipoParaReasignar || equiposParaReasignar.length) {
+  <app-reasignar-equipo
+    [equipo]="equipoParaReasignar"
+    [equipos]="equiposParaReasignar"
+    (cancelar)="cerrarReasignacion()"
+    (reasignado)="finalizarReasignacion()"
+  />
+}

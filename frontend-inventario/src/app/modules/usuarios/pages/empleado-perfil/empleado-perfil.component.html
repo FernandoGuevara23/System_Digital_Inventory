@@ -1,0 +1,200 @@
+<main class="employee-detail-page">
+  <button type="button" class="back-button" (click)="regresar()">
+    <ng-icon name="remixArrowLeftLine" size="1.25em" aria-hidden="true"></ng-icon>
+    <span>Volver a empleados</span>
+  </button>
+
+  @if (mostrarModalCarta && empleado && tipoCartaModal) {
+    <app-carta-generacion
+      [titular]="empleado"
+      [tipo]="tipoCartaModal"
+      [equipos]="equiposDisponiblesCarta()"
+      [equipoInicial]="equipoInicialCarta"
+      [cargandoEstados]="cargandoEstadosCartas"
+      [errorCargaEstados]="errorCargaEstadosCartas"
+      (generada)="cartaGenerada($event)"
+      (enviada)="cartaEnviada($event)"
+      (cancelado)="cerrarModalCarta()"
+    />
+  }
+
+  @if (cargando) {
+    <p class="state-message">Cargando perfil...</p>
+  } @else if (error && !empleado) {
+    <p class="state-message">{{ error }}</p>
+  } @else if (empleado) {
+    <header class="detail-header">
+      <label class="profile-photo" [class.editable]="editando" [attr.for]="editando ? 'perfil-foto-input' : null">
+        @if ((editando && vistaPreviaFoto) || (!editando && empleado.Foto_URL)) {
+          <img [src]="editando ? vistaPreviaFoto : obtenerUrlFoto(empleado.Foto_URL)" [alt]="'Foto de ' + empleado.Full_Name">
+        } @else {
+          <span>{{ empleado.Full_Name.slice(0, 2).toUpperCase() }}</span>
+        }
+        @if (editando) { <b>+</b> }
+      </label>
+      @if (editando) {
+        <input id="perfil-foto-input" class="foto-input" type="file" accept="image/jpeg,image/png" (change)="seleccionarFoto($event)">
+      }
+      <div class="detail-heading">
+        <small>Payroll {{ empleado.Payroll }}</small>
+        <h1>{{ empleado.Full_Name }}</h1>
+        <span class="status" [class.inactive]="!empleado.Estado">{{ empleado.Estado ? 'Activo' : 'Inactivo' }}</span>
+        <p>{{ empleado.Position || 'Sin puesto' }}<span aria-hidden="true"> · </span>{{ empleado.Departament || 'Sin departamento' }}</p>
+      </div>
+    </header>
+
+    @if (mensaje) { <app-alert [type]="tipoMensaje" [title]="tipoMensaje === 'error' ? 'No se pudo completar' : tipoMensaje === 'info' ? 'Aviso' : 'Cambios guardados'" [message]="mensaje" (dismissed)="mensaje = ''" /> }
+    @if (error) { <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" /> }
+
+    <section class="detail-content">
+      @if (!editando) {
+        <div class="section-heading detail-section-heading"><h2>Información del empleado</h2></div>
+        <div class="info-grid">
+          <div><small>Payroll</small><strong>{{ empleado.Payroll }}</strong></div>
+          <div><small>Correo</small><strong>{{ empleado.Correo || '—' }}</strong></div>
+          <div><small>Departamento</small><strong>{{ empleado.Departament || '—' }}</strong></div>
+          <div><small>Área</small><strong>{{ empleado.Area || '—' }}</strong></div>
+          <div><small>Puesto</small><strong>{{ empleado.Position || '—' }}</strong></div>
+          <div><small>OUnit</small><strong>{{ empleado.OUnit || '—' }}</strong></div>
+          <div><small>Manager</small><strong>{{ empleado.Manager || '—' }}</strong></div>
+          <div><small>CC</small><strong>{{ empleado.CC || '—' }}</strong></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn-secondary" (click)="iniciarEdicion()">
+            <ng-icon name="aspectsEdit" size="1.25em" aria-hidden="true"></ng-icon>
+            <span>Editar</span>
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirReasignacionGeneral()">
+            <ng-icon name="phosphorArrowsLeftRightBold" size="1.25em" aria-hidden="true"></ng-icon>
+            <span>Reasignar equipo</span>
+          </button>
+          <button type="button" class="btn-secondary" (click)="ReportesEquiposPorEmpleado()">
+            <ng-icon name="fluentDocumentPdf" size="1.25em" aria-hidden="true"></ng-icon>
+            <span>Descargar reporte</span>
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirCarta('INDIVIDUAL')">
+            <ng-icon name="fluentPersonEdit" size="1.25em" aria-hidden="true"></ng-icon>
+            <span>Carta individual</span>
+          </button>
+          <button type="button" class="btn-secondary" (click)="abrirCarta('COMPARTIDA')">
+            <ng-icon name="fluentPeopleEditFilled" size="1.25em" aria-hidden="true"></ng-icon>
+            <span>Carta compartida</span>
+          </button>
+        </div>
+      } @else {
+        <form class="detail-grid edit-grid" [formGroup]="edicionForm" (ngSubmit)="guardarEdicion()">
+          <label>
+            <small>Correo</small>
+            <input type="email" formControlName="Correo">
+          </label>
+          <label>
+            <small>Estado</small>
+            <select formControlName="Estado">
+              <option [ngValue]="true">Activo</option>
+              <option [ngValue]="false">Inactivo</option>
+            </select>
+          </label>
+          <div class="actions wide">
+            <button type="submit" class="btn-primary" (click)="guardarEdicion()">Guardar cambios</button>
+            <button type="button" class="btn-secondary" (click)="cancelarEdicion()">Cancelar</button>
+          </div>
+        </form>
+      }
+    </section>
+
+    <section class="equipment-content">
+      <div class="section-heading"><h2>Equipos por empleado</h2><span>{{ totalEquiposDelEmpleado() }}</span></div>
+      @if (!equiposGenerales().length) {
+        <p class="state-message">Este empleado no tiene equipos generales asignados.</p>
+      } @else {
+        <div class="equipment-list">
+          @for (equipo of equiposGenerales(); track equipo.Service_Tag) {
+            <article class="equipment-row">
+              <button type="button" class="equipment-main" (click)="abrirDetalleEquipo(equipo.Service_Tag)">
+                <span class="equipment-icon">▣</span>
+                <span>
+                  <strong>{{ equipo.Marca }} {{ equipo.Modelo }}</strong>
+                  <small>{{ equipo.Service_Tag }} · {{ equipo.Tipo_Equipo }}</small>
+                  <span [class]="claseEstadoCarta(equipo.Service_Tag)">{{ etiquetaEstadoCarta(equipo.Service_Tag) }}</span>
+                  @if (personasCompartidasDeEquipo(equipo.Service_Tag).length) {
+                    <small>Compartido con: {{ nombresCompartidosDeEquipo(equipo.Service_Tag) }}</small>
+                  }
+                </span>
+              </button>
+              <div class="equipment-meta">
+                <span>{{ equipo.Estado || 'Asignado' }}</span>
+                <button type="button" class="btn-secondary compact" (click)="abrirReasignacion(equipo)" aria-label="Reasignar equipo" title="Reasignar equipo">
+                  <ng-icon name="phosphorArrowsLeftRightBold" size="1.25em" aria-hidden="true"></ng-icon>
+                  <span>Reasignar</span>
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+      <div class="section-heading section-spaced"><h2>Teléfonos</h2><span>{{ equiposTelefono().length }}</span></div>
+      @if (!equiposTelefono().length) {
+        <p class="state-message">Este empleado no tiene teléfonos asignados.</p>
+      } @else {
+        <div class="equipment-list">
+          @for (equipo of equiposTelefono(); track equipo.Service_Tag) {
+            <article class="equipment-row">
+              <button type="button" class="equipment-main" (click)="abrirDetalleEquipo(equipo.Service_Tag)">
+                <span class="equipment-icon">☎</span>
+                <span><strong>{{ equipo.Marca }} {{ equipo.Modelo }}</strong><small>{{ equipo.Service_Tag }} · {{ equipo.Tipo_Equipo }}</small><span [class]="claseEstadoCarta(equipo.Service_Tag)">{{ etiquetaEstadoCarta(equipo.Service_Tag) }}</span></span>
+              </button>
+              <div class="equipment-meta"><button type="button" class="btn-secondary compact" (click)="abrirReasignacion(equipo)">Reasignar</button></div>
+            </article>
+          }
+        </div>
+      }
+      @if (equiposCompartidosDelEmpleado().length) {
+        <div class="section-heading section-spaced">
+          <h2>Equipos compartidos</h2>
+          <span>{{ equiposCompartidosDelEmpleado().length }}</span>
+        </div>
+        <div class="equipment-list">
+          @for (equipo of equiposCompartidosDelEmpleado(); track equipo.service_tag) {
+            <button type="button" class="equipment-row shared-equipment-row" (click)="abrirEquipoCompartido(equipo.service_tag)">
+              <span class="equipment-main shared-equipment-main">
+                <span class="equipment-icon">▣</span>
+                <span>
+                  <strong>{{ equipo.brand_model }}</strong>
+                  <small>{{ equipo.service_tag }} · {{ equipo.device_type }}</small>
+                  <span class="shared-label">Compartido</span>
+                  <small>Comparte este equipo con {{ equipo.nombre_titular }} (Payroll {{ equipo.payroll_titular }})</small>
+                </span>
+              </span>
+              <span class="status">Ver equipo →</span>
+            </button>
+          }
+        </div>
+      }
+      <div class="section-heading section-spaced"><h2>Líneas telefónicas</h2><span>{{ lineasDelEmpleado().length }}</span></div>
+      @if (!lineasDelEmpleado().length) {
+        <p class="state-message">Este empleado no tiene líneas telefónicas asignadas.</p>
+      } @else {
+        <div class="equipment-list">
+          @for (linea of lineasDelEmpleado(); track linea.Service_Tag) {
+            <article class="equipment-row">
+              <button type="button" class="equipment-main" (click)="abrirDetalleEquipo(linea.Service_Tag)">
+                <span class="equipment-icon">☎</span>
+                <span><strong>{{ linea.Numero_Telefono || 'Sin número' }}</strong><small>{{ linea.Service_Tag }} · {{ linea.Account || 'Sin cuenta' }}</small></span>
+              </button>
+              <span class="line-state">{{ linea.Estado || 'Activa' }}</span>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+</main>
+
+@if (equipoParaReasignar !== null || equiposParaReasignar.length > 0) {
+  <app-reasignar-equipo
+    [equipo]="equipoParaReasignar ?? null"
+    [equipos]="equiposParaReasignar ?? null"
+    (cancelar)="cerrarReasignacion()"
+    (reasignado)="finalizarReasignacion()"
+  />
+}

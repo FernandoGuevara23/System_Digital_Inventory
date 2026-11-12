@@ -1,0 +1,40 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="brand" *ngIf="!collapsed">
+      <span type="button" (click)="go('dashboard')" class="brand-icon"><ng-icon name="aspectsHome" size="1em" color="Azure"></ng-icon></span>
+      <div>
+        <p class="brand-name" >Inventario IT</p>
+        <p class="brand-sub">Marquardt</p>
+      </div>
+    </div>
+    <span class="brand-icon-only" (click)="go('dashboard')" *ngIf="collapsed"><ng-icon name="aspectsHome" size="1em" color="Azure"></ng-icon></span>
+    <button class="collapse-btn" (click)="toggleCollapse.emit()" [title]="collapsed ? 'Expandir' : 'Colapsar'">
+  
+  @if (collapsed) {
+    <ng-icon name="remixArrowRightLine" size="1.25em" color="Azure"></ng-icon>
+  } @else {
+    <ng-icon name="remixArrowLeftLine" size="1.25em" color="Azure"></ng-icon>
+  }
+
+  </button>
+  </div>
+
+ <nav class="sidebar-nav">
+  <button
+    *ngFor="let item of navItems"
+    type="button"
+    class="nav-item"
+    [class.active]="active === item.id"
+    (click)="go(item.id)"
+    [title]="item.label"
+  >
+  
+    <ng-icon class="nav-icon" [name]="$any(item.icon)" size="1.5rem"  color="Azure"></ng-icon>
+    <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+  </button>
+</nav>
+
+  <div class="sidebar-footer" *ngIf="!collapsed">
+    <p class="footer-text">InvenIT</p>
+  </div>
+</aside>

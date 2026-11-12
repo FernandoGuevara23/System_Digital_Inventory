@@ -1,0 +1,74 @@
+<section class="catalogos-module">
+  <div class="module-toolbar">
+    <div>
+      <h2>Catálogos del sistema</h2>
+    </div>
+  </div>
+
+  <div class="catalog-grid">
+    <article class="catalog-box">
+      <h3>Tipos de equipo</h3>
+      <form [formGroup]="tipoForm" (ngSubmit)="guardarTipo()" class="mini-form">
+        <input formControlName="nombre" placeholder="Nombre del tipo" />
+        <button type="submit" class="primary-btn" (click)="guardarTipo()">Guardar</button>
+      </form>
+      <div class="list-stack">
+        @for (tipo of tiposEquipo; track tipo.Id) {
+          <div class="list-item">
+            <span>{{ tipo.Nombre_Tipo_Equipo }}</span>
+            <div>
+              <button type="button" class="ghost-btn" (click)="editarTipo(tipo)">Editar</button>
+              <button type="button" class="danger-btn" (click)="eliminarTipo(tipo)">Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="catalog-box">
+      <h3>Proyectos</h3>
+      <form [formGroup]="proyectoForm" (ngSubmit)="guardarProyecto()" class="mini-form">
+        <input formControlName="nombre" placeholder="Nombre del proyecto" />
+        <button type="submit" class="primary-btn" (click)="guardarProyecto()">Guardar</button>
+      </form>
+      <div class="list-stack">
+        @for (proyecto of proyectos; track proyecto.Id) {
+          <div class="list-item">
+            <span>{{ proyecto.Nombre_Proyecto }}</span>
+            <div>
+              <button type="button" class="ghost-btn" (click)="editarProyecto(proyecto)">Editar</button>
+              <button type="button" class="danger-btn" (click)="eliminarProyecto(proyecto)">Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="catalog-box">
+      <h3>Departamentos</h3>
+      <form [formGroup]="departamentoForm" (ngSubmit)="guardarDepartamento()" class="mini-form double">
+        <input formControlName="nombre" placeholder="Departamento" />
+        <input formControlName="manager" placeholder="Manager" />
+        <button type="submit" class="primary-btn" (click)="guardarDepartamento()">Guardar</button>
+      </form>
+      <div class="list-stack">
+        @for (departamento of departamentos; track departamento.Id) {
+          <div class="list-item">
+            <span>{{ departamento.Nombre_Departamento }} · {{ departamento.Manager_Asignado }}</span>
+            <div>
+              <button type="button" class="ghost-btn" (click)="editarDepartamento(departamento)">Editar</button>
+              <button type="button" class="danger-btn" (click)="eliminarDepartamento(departamento)">Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+
+  @if (mensaje) {
+    <app-alert [type]="tipoMensaje" title="Operación completada" [message]="mensaje" (dismissed)="mensaje = ''" />
+  }
+  @if (error) {
+    <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" />
+  }
+</section>

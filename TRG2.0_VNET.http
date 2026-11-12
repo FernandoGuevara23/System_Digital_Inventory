@@ -1,0 +1,6 @@
+@TRG2._0_VNET_HostAddress = http://localhost:5013
+
+GET {{TRG2._0_VNET_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

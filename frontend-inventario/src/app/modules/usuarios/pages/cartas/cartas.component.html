@@ -1,0 +1,120 @@
+<section class="cartas-page">
+  <div class="header-row">
+    <div class="page-heading">
+      <h1>Cartas Responsivas</h1>
+    </div>
+  </div>
+
+  @if (mensaje) {
+    <app-alert type="success" title="Operación completada" [message]="mensaje" (dismissed)="mensaje = ''" />
+  }
+  @if (error) {
+    <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" />
+  }
+
+  <div class="filters panel">
+    <div class="filters-heading">
+    </div>
+    <div class="filter-grid">
+      <label class="search-filter">
+        <span>Buscar</span>
+        <input type="search" name="termino" [(ngModel)]="termino" (keyup.enter)="buscar()" placeholder="Service Tag, hostname o titular" />
+      </label>
+
+      <label>
+        <span>Estado</span>
+        <select name="estado" [(ngModel)]="filtroEstado" (ngModelChange)="actualizarFiltros()" aria-label="Filtrar por estado">
+          <option value="">Todos</option>
+          <option *ngFor="let estado of estados" [value]="estado">{{ textoEstado(estado) }}</option>
+        </select>
+      </label>
+
+      <div class="type-filter">
+        <span>Tipo de carta</span>
+        <div class="type-filter-options" role="group" aria-label="Filtrar cartas por tipo">
+          <button type="button" [class.active]="filtroTipo === ''" [attr.aria-pressed]="filtroTipo === ''" (click)="cambiarTipo('')">Todas</button>
+          <button type="button" [class.active]="filtroTipo === 'INDIVIDUAL'" [attr.aria-pressed]="filtroTipo === 'INDIVIDUAL'" (click)="cambiarTipo('INDIVIDUAL')">Individuales</button>
+          <button type="button" [class.active]="filtroTipo === 'COMPARTIDA'" [attr.aria-pressed]="filtroTipo === 'COMPARTIDA'" (click)="cambiarTipo('COMPARTIDA')">Compartidas</button>
+        </div>
+      </div>
+    </div>
+    <div class="actions-row">
+      <span class="filter-hint">Mostrando {{ cartasFiltradas.length }} de {{ totalCartas }} cartas</span>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <div class="loading panel" role="status"><span class="loading-indicator"></span>Cargando cartas...</div>
+  </ng-template>
+
+  <section class="table-panel panel" *ngIf="!cargando; else loading">
+    <div class="table-heading">
+      <div>
+        <h2>Historial de cartas</h2>
+      </div>
+      <span class="table-count">{{ cartasFiltradas.length }} de {{ totalCartas }} cartas</span>
+    </div>
+    <p class="scroll-hint">Desliza la tabla horizontalmente para ver todos los datos y acciones.</p>
+    <div class="table-wrap">
+      <table class="cartas-table" aria-label="Historial de cartas responsivas">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Service Tag</th>
+            <th>Hostname</th>
+            <th>Tipo</th>
+            <th>Titular</th>
+            <th>Co-responsables</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="cartasFiltradas.length === 0">
+            <td colspan="8" class="empty-state">
+              {{ cartas.length === 0 ? 'No hay cartas responsivas para mostrar.' : 'No se encontraron cartas con esos filtros.' }}
+            </td>
+          </tr>
+          <tr *ngFor="let carta of cartasFiltradas; let indice = index">
+            <td class="id-cell">{{ numeroCarta(indice) }}</td>
+            <td class="service-tag-cell">{{ carta.service_tag }}</td>
+            <td>{{ carta.hostname }}</td>
+            <td><span class="letter-type">{{ carta.tipo_carta }}</span></td>
+            <td class="person-cell">
+              <span class="person-details">
+                <strong (click)="verPerfil(carta.payroll_titular)">{{ carta.nombre_titular }}</strong>
+                <small>{{ carta.payroll_titular }}</small>
+              </span>
+            </td>
+            <td>
+              <ng-container *ngIf="coResponsables(carta).length; else sinCoResponsable">
+                <span class="additional-people">
+                  <span class="person-details" *ngFor="let persona of coResponsables(carta)">
+                    <strong>{{ persona.nombre }}</strong>
+                    <small>{{ persona.payroll }}</small>
+                  </span>
+                </span>
+              </ng-container>
+              <ng-template #sinCoResponsable><span class="no-additional-people">—</span></ng-template>
+            </td>
+            <td><span [class]="badgeClase(carta.estado)">{{ textoEstado(carta.estado) }}</span></td>
+            <td class="actions">
+              <button class="btn btn-send" type="button" [disabled]="cargandoCartaId === carta.id || carta.estado === 'CERRADA' || carta.estado === 'FIRMADA'" (click)="enviarCorreo(carta)">
+                {{ cargandoCartaId === carta.id ? 'Procesando...' : carta.estado === 'ENVIADO' ? 'Reenviar correo' : 'Enviar correo' }}
+              </button>
+              <button class="btn btn-secondary" type="button" (click)="verCarta(carta)">Ver carta</button>
+              <button class="btn btn-sign" type="button" [disabled]="cargandoCartaId === carta.id || carta.estado !== 'ENVIADO'" (click)="marcarFirmada(carta)">Marcar firmada</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    @if (totalPaginas > 1) {
+      <nav class="cards-pagination" aria-label="Paginación de cartas">
+        <button type="button" class="btn btn-secondary" [disabled]="paginaActual === 1 || cargando" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+        <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button type="button" class="btn btn-secondary" [disabled]="paginaActual === totalPaginas || cargando" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+      </nav>
+    }
+  </section>
+</section>

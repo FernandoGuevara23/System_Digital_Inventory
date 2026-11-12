@@ -1,0 +1,20 @@
+:host {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 480px;
+  max-width: 90vw;
+  z-index: 50;
+  pointer-events: auto;
+}
+.panel {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  height: 100%;
+  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.14), -1px 0 0 rgba(15, 23, 42, 0.08);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,142 @@
+<main class="equipment-detail-page">
+  <button type="button" class="back-button" (click)="regresar()">
+    <ng-icon name="remixArrowLeftLine" size="1.2em" aria-hidden="true"></ng-icon>
+    <span>Volver a equipos</span>
+  </button>
+  @if (cargando) {
+    <p class="state-message">Cargando equipo...</p>
+  } @else if (error && !equipo) {
+    <p class="state-message">{{ error }}</p>
+  } @else if (equipo) {
+    <header class="detail-header">
+      <div class="equipment-icon" aria-hidden="true">▣</div>
+      <div class="detail-heading">
+        <small>{{ equipo.Service_Tag }} · {{ equipo.Tipo_Equipo }}</small>
+        <h1>{{ equipo.Marca }} {{ equipo.Modelo }}</h1>
+        <span class="status" [class.status-inactive]="equipo.Estado === 'Inactivo'" [class.status-assigned]="equipo.Estado !== 'Inactivo' && equipo.Payroll">
+          {{ equipo.Estado === 'Inactivo' ? 'Inactivo' : (equipo.Payroll ? 'Asignado' : 'Disponible') }}
+        </span>
+      </div>
+    </header>
+    <nav class="detail-tabs" aria-label="Secciones del equipo">
+      <button type="button" [class.active]="pestana === 'detalle'" (click)="pestana = 'detalle'">Detalle</button>
+      <button type="button" [class.active]="pestana === 'trace'" (click)="pestana = 'trace'" aria-live="polite">
+        Trace ({{ cargandoTrace ? 'Cargando…' : historial.length }})
+      </button>
+    </nav>
+
+    @if (pestana === 'detalle') {
+      <section class="detail-content">
+        @if (!editando) {
+          <h2 class="section-title">Información del equipo</h2>
+          <div class="detail-grid">
+            <div><small>Service Tag</small><strong>{{ equipo.Service_Tag }}</strong></div>
+            <div><small>Hostname</small><strong>{{ equipo.Hostname || '—' }}</strong></div>
+            <div><small>MAC</small><strong>{{ equipo.MAC || '—' }}</strong></div>
+            <div><small>Marca</small><strong>{{ equipo.Marca }}</strong></div>
+            <div><small>Modelo</small><strong>{{ equipo.Modelo }}</strong></div>
+            <div><small>IMEI</small><strong>{{ equipo.IMEI || '—' }}</strong></div>
+            <div><small>Tipo</small><strong>{{ equipo.Tipo_Equipo }}</strong></div>
+            <div><small>Ubicación</small><strong>{{ equipo.Location || '—' }}</strong></div>
+  
+            <div><small>Cuenta</small><strong>{{ equipo.Account || '—' }}</strong></div>
+            @if (esTelefono()) {
+              <div><small>Apple ID</small><strong>{{ equipo.Apple_ID || '—' }}</strong></div>
+              <div><small>Contraseña Apple</small><strong>{{ equipo.Password_apple || '—' }}</strong></div>
+            }
+            <div><small>MQ Asset</small><strong>{{ equipo.MQ_Asset || '—' }}</strong></div>
+            <div><small>Accesorios</small><strong>{{ equipo.Accesorios || '—' }}</strong></div>
+            <div><small>Proyecto</small><strong>{{ equipo.Proyecto || '—' }}</strong></div>
+            <div>
+              <small>Estado de carta</small>
+              @if (errorCargaCarta) {
+                <strong class="error-text">{{ errorCargaCarta }}</strong>
+              } @else {
+                <strong>{{ estadoCartaTexto() }}</strong>
+              }
+              @if (cartaMostrada?.tipo_carta === 'COMPARTIDA') {
+                @if (personasCompartidasCartaActiva()) {
+                  <small class="shared-people-label">
+                    Compartido con: {{ personasCompartidasCartaActiva() }}
+                  </small>
+                }
+              }
+            </div>
+            <div class="wide"><small>Comentarios</small><strong>{{ equipo.Comments || '—' }}</strong></div>
+          </div>
+        } @else {
+          <form class="detail-grid" [formGroup]="formulario" (ngSubmit)="guardar()">
+            <label><small>Service Tag</small><input [value]="equipo.Service_Tag" disabled></label>
+            <label><small>Hostname</small><input formControlName="Hostname" maxlength="50">
+              @if (formulario.controls.Hostname.touched && formulario.controls.Hostname.hasError('maxlength')) {
+                <small role="alert">El hostname no puede exceder 50 caracteres.</small>
+              }
+            </label>
+            <label><small>MAC</small><input formControlName="MAC" maxlength="30"></label>
+            <label><small>Marca</small><input formControlName="Marca"></label>
+            <label><small>Modelo</small><input formControlName="Modelo"></label>
+            <label><small>IMEI</small><input formControlName="IMEI"></label>
+            <label><small>Ubicación</small><input formControlName="Location"></label>
+            @if (esTelefono()) {
+              <label><small>Apple ID</small><input formControlName="Apple_ID"></label>
+              <label><small>Contraseña Apple</small><input formControlName="Password_apple"></label>
+            }
+            <label><small>MQ Asset</small><input formControlName="MQ_Asset"></label>
+            <label><small>Accesorios</small><input formControlName="Accesorios"></label>
+            <label><small>Proyecto</small><select formControlName="Proyecto"><option value="">Sin proyecto</option>@for (proyecto of proyectos; track proyecto.Id) {<option [value]="proyecto.Nombre_Proyecto">{{ proyecto.Nombre_Proyecto }}</option>}</select></label>
+            <label class="wide"><small>Comentarios</small><textarea formControlName="Comments"></textarea></label>
+            <div class="actions wide">
+              <button type="button" class="btn-primary" [disabled]="guardando" (click)="guardar()">{{ guardando ? 'Guardando...' : 'Guardar cambios' }}</button>
+              <button type="button" class="btn-secondary" [disabled]="guardando" (click)="cancelarEdicion()">Cancelar</button>
+            </div>
+          </form>
+        }
+
+        <button type="button" class="employee-card" [disabled]="!equipo.Empleado" (click)="abrirEmpleado()">
+          <span class="avatar">{{ equipo.Empleado?.Full_Name?.slice(0, 2)?.toUpperCase() || '—' }}</span>
+          <span class="employee-copy"><small>Asignado a</small><strong>{{ equipo.Empleado?.Full_Name || 'Sin asignar' }}</strong><small>{{ equipo.Empleado ? 'Ver perfil del empleado' : 'Equipo disponible' }}</small></span>
+        </button>
+        @if (!editando && !soloLecturaCompartido) {
+          <div class="actions">
+            <button type="button" class="btn-secondary" aria-label="Editar equipo" title="Editar equipo" (click)="iniciarEdicion()"><ng-icon name="aspectsEdit" size="1.2em" aria-hidden="true"></ng-icon><span>Editar</span></button>
+            <button type="button" class="btn-secondary" aria-label="Reasignar equipo" title="Reasignar equipo" [disabled]="equipo.Estado === 'Inactivo'" (click)="abrirReasignacion()"><ng-icon name="phosphorArrowsLeftRightBold" size="1.2em" aria-hidden="true"></ng-icon><span>Reasignar</span></button>
+            <button type="button" class="btn-primary" aria-label="Generar carta individual" title="Generar carta individual" [disabled]="!equipo.Payroll || !equipo.Empleado || esInactivo() || verificandoCartaActiva" (click)="abrirCarta('INDIVIDUAL')"><ng-icon name="fluentPersonEdit" size="1.2em" aria-hidden="true"></ng-icon><span>Carta individual</span></button>
+            <button type="button" class="btn-primary" aria-label="Generar carta compartida" title="Generar carta compartida" [disabled]="!equipo.Payroll || !equipo.Empleado || esInactivo() || verificandoCartaActiva" (click)="abrirCarta('COMPARTIDA')"><ng-icon name="fluentPeopleEditFilled" size="1.2em" aria-hidden="true"></ng-icon><span>Carta compartida</span></button>
+            @if (equipo.Estado !== 'Inactivo') {
+              <button type="button" class="btn-warning" aria-label="Enviar a Scrap" title="Enviar a Scrap" (click)="solicitarScrap()"><ng-icon name="lucideRecycle" size="1.2em" aria-hidden="true"></ng-icon><span>Enviar a scrap</span></button>
+              <button type="button" class="btn-primary" aria-label="Enviar a Donación" title="Enviar a Donación" (click)="solicitarDonacion()"><ng-icon name="phosphorGiftDuotone" size="1.2em" aria-hidden="true"></ng-icon><span>Donar</span></button>
+              <button type="button" class="btn-primary" aria-label="Enviar a Producción" title="Enviar a Producción" (click)="solicitarProduccion()"><ng-icon name="aspectsDashboard" size="1.2em" aria-hidden="true"></ng-icon><span>Producción</span></button>
+              <button type="button" class="btn-primary" aria-label="Enviar a Ventas" title="Enviar a Ventas" (click)="solicitarVenta()"><ng-icon name="lucideShoppingBag" size="1.2em" aria-hidden="true"></ng-icon><span>Ventas</span></button>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <section class="trace-list">
+        @if (cargandoTrace) { <p class="state-message">Cargando trace...</p> }
+        @else if (!historial.length) { <p class="state-message">Sin movimientos registrados.</p> }
+        @for (movimiento of historial; track movimiento.Id) {
+          <article><div><strong>{{ movimiento.Accion }}</strong><small>{{ movimiento.Fecha | date:'dd-MM-yyyy' }}</small></div><p>{{ movimiento.Detalle || 'Sin detalle' }}</p></article>
+        }
+      </section>
+    }
+  }
+</main>
+@if (mensaje) { <app-alert [type]="tipoMensaje" title="Operación completada" [message]="mensaje" (dismissed)="mensaje = ''" /> }
+@if (error && equipo) { <app-alert type="error" title="No se pudo completar la operación" [message]="error" (dismissed)="error = ''" /> }
+@if (equipoParaReasignar) {
+  <app-reasignar-equipo
+    [equipo]="equipoParaReasignar"
+    (cancelar)="cerrarReasignacion()"
+    (reasignado)="finalizarReasignacion()"
+  />
+}
+@if (tipoCartaModal && equipo) {
+  <app-carta-generacion
+    [tipo]="tipoCartaModal"
+    [equipoContexto]="equipo"
+    (generada)="cartaGenerada($event)"
+    (enviada)="cartaEnviada($event)"
+    (cancelado)="cerrarModalCarta()"
+  />
+}

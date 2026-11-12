@@ -1,0 +1,117 @@
+<section class="usuarios-module">
+  <div class="module-toolbar">
+    <div>
+      <h2>Administración de usuarios</h2>
+    </div>
+    <button type="button" class="primary-btn" (click)="alternarFormulario()">
+      {{ mostrarFormulario ? 'Cancelar' : 'Nuevo usuario' }}
+    </button>
+  </div>
+
+  @if (mostrarFormulario) {
+
+    @if (usuarioEnEdicion) {
+      <form class="user-form" [formGroup]="usuarioForm" (ngSubmit)="editarAdmin(usuarioEnEdicion)">
+        <div style="margin-bottom: 1.5rem;">
+          <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Usuario para iniciar sesión:</p>
+          <h3 style="margin: 0;">{{ usuarioEnEdicion.UserName }}</h3>
+        </div>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Nombre completo</span>
+            <input type="text" formControlName="full_name" maxlength="150" placeholder="Nombre y apellidos" />
+          </label>
+          <div class="field">
+            <label for="edit-user-password">Nueva contraseña (opcional)</label>
+            <div class="password-input">
+              <input id="edit-user-password" [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Déjala vacía para no cambiarla" />
+              <button type="button" class="password-toggle" [attr.aria-label]="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" [attr.aria-pressed]="mostrarPassword" (click)="mostrarPassword = !mostrarPassword">
+                @if (mostrarPassword) {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3 21 21M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.8 10.8 0 0 1 12 5c5.5 0 9 7 9 7a15.7 15.7 0 0 1-3.2 4.1M6.2 6.2C3.9 7.7 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 4-.8"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" (click)="cancelarFormulario()">
+            Cancelar
+          </button>
+          <button type="button" class="primary-btn" [disabled]="usuarioForm.invalid || guardandoUsuario" (click)="editarAdmin(usuarioEnEdicion)">
+            {{ guardandoUsuario ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </form>
+    } 
+  
+    @else {
+      <form class="user-form" [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+        <div class="form-grid">
+          <label class="field">
+            <span>Usuario para iniciar sesión</span>
+            <input type="text" formControlName="username" maxlength="50" placeholder="Usuario123" />
+          </label>
+          <label class="field">
+            <span>Nombre completo para mostrar</span>
+            <input type="text" formControlName="full_name" maxlength="150" placeholder="Nombre y apellidos" />
+          </label>
+          <div class="field">
+            <label for="new-user-password">Contraseña</label>
+            <div class="password-input">
+              <input id="new-user-password" [type]="mostrarPassword ? 'text' : 'password'" formControlName="password" placeholder="Al menos 6 digitos..." />
+              <button type="button" class="password-toggle" [attr.aria-label]="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'" [attr.aria-pressed]="mostrarPassword" (click)="mostrarPassword = !mostrarPassword">
+                @if (mostrarPassword) {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3 21 21M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.8 10.8 0 0 1 12 5c5.5 0 9 7 9 7a15.7 15.7 0 0 1-3.2 4.1M6.2 6.2C3.9 7.7 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 4-.8"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" (click)="cancelarFormulario()">
+            Cancelar
+          </button>
+          <button type="button" class="primary-btn" [disabled]="usuarioForm.invalid || guardandoUsuario" (click)="guardarUsuario()">
+            {{ guardandoUsuario ? 'Guardando...' : 'Guardar usuario' }}
+          </button>
+        </div>
+      </form>
+    }
+  }
+
+  <!-- ALERTAS -->
+  @if (mensaje) {
+    <app-alert [type]="tipoMensaje" title="Operación correcta" [message]="mensaje" (dismissed)="mensaje = ''" />
+  }
+
+  @if (error) {
+    <app-alert type="error" title="No se pudo completar" [message]="error" (dismissed)="error = ''" />
+  }
+
+  
+  <div class="users-list">
+    @if (usuariosFiltrados.length === 0) {
+      <div class="empty-state">No hay usuarios</div>
+    } @else {
+      @for (usuario of usuariosFiltrados; track usuario.Id) {
+        <article class="user-card">
+          <div class="avatar">{{ (usuario.Nombre_Completo || usuario.UserName).charAt(0).toUpperCase() }}</div>
+          <div class="user-content">
+            <strong>{{ usuario.Nombre_Completo || usuario.UserName }}</strong>
+            <small>Usuario: {{ usuario.UserName }}</small>
+          </div>
+          <div class="user-actions">
+            <button type="button" class="ghost-btn" (click)="editarUsuario(usuario)">Editar</button>
+          </div>
+        </article>
+      }
+    }
+  </div>
+</section>
